@@ -62,6 +62,20 @@ describe('backend', () => {
     expect(isAborted(err)).toBe(true);
   });
 
+  it('samples field paths of a collection', async () => {
+    const client = connect();
+    await client.call({ type: 'open', archiveId: 4, file }).promise;
+    const { paths } = await client.call({ type: 'fields', key: '4/shop.orders' }).promise;
+    expect(paths).toEqual([
+      { path: '_id', types: ['objectId'] },
+      { path: 'city', types: ['string'] },
+      { path: 'i', types: ['number'] },
+      { path: 'price', types: ['decimal'] },
+    ]);
+    expect((await client.call({ type: 'fields', key: '4/shop.empty' }).promise).paths).toEqual([]);
+    await expect(client.call({ type: 'fields', key: '9/x.y' }).promise).rejects.toMatchObject({ code: 'notFound' });
+  });
+
   it('close forgets the archive', async () => {
     const client = connect();
     await client.call({ type: 'open', archiveId: 3, file }).promise;

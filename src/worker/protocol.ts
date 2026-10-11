@@ -2,6 +2,7 @@ import type { OpenError } from '../archive/open';
 import type { IndexInfo } from '../archive/parser';
 import type { ExportFormat } from '../export/writers';
 import type { QueryInput } from '../query/spec';
+import type { FieldPath } from './fields';
 
 export interface CollectionSummary {
   key: string;
@@ -31,6 +32,7 @@ export type Request =
   | Req<'close', { archiveId: number }>
   | Req<'query', { key: string; input: QueryInput }>
   | Req<'page', { key: string; input: QueryInput; offset: number; size: number }>
+  | Req<'fields', { key: string }>
   | Req<'export', { key: string; input: QueryInput; format: ExportFormat; target: FileSystemFileHandle | null }>
   | Req<'cancel', { target: number }>;
 
@@ -39,6 +41,7 @@ export type Reply =
   | { type: 'closed'; jobId: number }
   | { type: 'queried'; jobId: number; matched: number; returned: number }
   | { type: 'page'; jobId: number; offset: number; docs: Record<string, unknown>[] }
+  | { type: 'fields'; jobId: number; paths: FieldPath[] }
   | { type: 'exported'; jobId: number; count: number };
 
 export type Response =
@@ -52,5 +55,6 @@ export interface ReplyMap {
   close: Extract<Reply, { type: 'closed' }>;
   query: Extract<Reply, { type: 'queried' }>;
   page: Extract<Reply, { type: 'page' }>;
+  fields: Extract<Reply, { type: 'fields' }>;
   export: Extract<Reply, { type: 'exported' }>;
 }

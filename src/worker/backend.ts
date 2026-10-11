@@ -3,6 +3,7 @@ import { openArchive, type OpenedArchive, type OpenedCollection } from '../archi
 import { createWriter } from '../export/writers';
 import { executeQuery, materialize, type QueryResult } from '../query/engine';
 import { parseQuerySpec, type QueryInput, type QuerySpec } from '../query/spec';
+import { SAMPLE_SIZE, samplePaths, type FieldPath } from './fields';
 import type { ArchiveSummary, Request, Response } from './protocol';
 
 class BackendFailure extends Error {
@@ -62,6 +63,7 @@ export function createBackend(post: (msg: Response) => void) {
   const archives = new Map<number, OpenedArchive>();
   const jobs = new Map<number, AbortController>();
   const cache = new Map<string, { inputKey: string; spec: QuerySpec; result: QueryResult }>();
+  const fieldCache = new Map<string, FieldPath[]>();
 
   const collection = (key: string): OpenedCollection => {
     const slash = key.indexOf('/');
@@ -100,7 +102,7 @@ export function createBackend(post: (msg: Response) => void) {
       }
       case 'close': {
         archives.delete(req.archiveId);
-        for (const k of [...cache.keys()]) if (k.startsWith(`${req.archiveId}/`)) cache.delete(k);
+        for (const c of [cache, fieldCache]) for (const k of [...c.keys()]) if (k.startsWith(`${req.archiveId}/`)) c.delete(k);
         post({ type: 'closed', jobId });
         return;
       }
@@ -116,6 +118,17 @@ export function createBackend(post: (msg: Response) => void) {
           EJSON.serialize(materialize(store, i, spec.projection), { relaxed: true }),
         );
         post({ type: 'page', jobId, offset: req.offset, docs });
+        return;
+      }
+      case 'fields': {
+        let paths = fieldCache.get(req.key);
+        if (!paths) {
+          const store = collection(req.key).store;
+          const n = Math.min(SAMPLE_SIZE, store.count);
+          paths = samplePaths(Array.from({ length: n }, (_, i) => store.get(i)));
+          fieldCache.set(req.key, paths);
+        }
+        post({ type: 'fields', jobId, paths });
         return;
       }
       case 'export': {
