@@ -81,6 +81,13 @@ export async function parseArchive(stream: ReadableStream<Uint8Array>, sink: Arc
     if (q.length < size) return null;
     return q.take(size);
   };
+  const decode = (b: Uint8Array): Document => {
+    try {
+      return deserialize(b);
+    } catch (e) {
+      throw new ArchiveFormatError('corrupt', `Malformed BSON document: ${e instanceof Error ? e.message : String(e)}`, q.consumed - b.length);
+    }
+  };
   const atTerminator = () => q.peekUint32() === TERMINATOR;
 
   const pump = () => {
@@ -95,7 +102,7 @@ export async function parseArchive(stream: ReadableStream<Uint8Array>, sink: Arc
         case 'header': {
           const b = nextDoc();
           if (!b) return;
-          sink.header(deserialize(b) as ArchiveHeader);
+          sink.header(decode(b) as ArchiveHeader);
           state = 'meta';
           break;
         }
@@ -108,13 +115,13 @@ export async function parseArchive(stream: ReadableStream<Uint8Array>, sink: Arc
           }
           const b = nextDoc();
           if (!b) return;
-          sink.collection(toMeta(deserialize(b)));
+          sink.collection(toMeta(decode(b)));
           break;
         }
         case 'segmentHeader': {
           const b = nextDoc();
           if (!b) return;
-          const h = deserialize(b);
+          const h = decode(b);
           ns = nsOf(String(h.db), String(h.collection));
           if (h.EOF === true) sink.eof(ns);
           state = 'segmentDocs';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deserialize, ObjectId, type Document } from 'bson';
+import { deserialize, ObjectId, serialize, type Document } from 'bson';
 import { ArchiveFormatError, parseArchive, type ArchiveSink, type CollectionMeta } from './parser';
 import { encodeArchive, streamOf, type FixtureCollection } from './testing/encodeArchive';
 
@@ -110,5 +110,42 @@ describe('parseArchive', () => {
     ac.abort();
     const err = await parseArchive(streamOf(encodeArchive([people])), collector().sink, ac.signal).catch((e) => e);
     expect(err.name).toBe('AbortError');
+  });
+
+  it('flags malformed BSON inside a correctly sized document as corrupt', async () => {
+    const bytes = encodeArchive([orders]).slice();
+    const view = new DataView(bytes.buffer);
+    const metaStart = 4 + view.getInt32(4, true);
+    bytes[metaStart + 4] = 0xff; // invalid element type, length prefix untouched
+    const err = await parseArchive(streamOf(bytes), collector().sink).catch((e) => e);
+    expect(err).toBeInstanceOf(ArchiveFormatError);
+    expect(err.code).toBe('corrupt');
+    expect(err.offset).toBe(metaStart);
+  });
+
+  it('still reports a collection whose metadata is not valid EJSON', async () => {
+    const u32 = (n: number) => {
+      const b = new Uint8Array(4);
+      new DataView(b.buffer).setUint32(0, n, true);
+      return b;
+    };
+    const parts = [
+      u32(0x8199e26d),
+      serialize({ version: '0.1' }),
+      serialize({ db: 'd', collection: 'c', metadata: 'not json{', size: 0, type: 'collection' }),
+      u32(0xffffffff),
+      serialize({ db: 'd', collection: 'c', EOF: true, CRC: 0 }),
+      u32(0xffffffff),
+    ];
+    const bytes = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
+    let o = 0;
+    for (const p of parts) {
+      bytes.set(p, o);
+      o += p.length;
+    }
+    const c = collector();
+    await parseArchive(streamOf(bytes), c.sink);
+    expect(c.metas).toEqual([{ db: 'd', collection: 'c', type: 'collection', indexes: [], options: {} }]);
+    expect(c.eofs).toEqual(['d.c']);
   });
 });
