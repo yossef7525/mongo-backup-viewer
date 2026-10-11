@@ -39,6 +39,15 @@ describe('toPlain', () => {
     });
   });
 
+  it('keeps a field named __proto__ as data', () => {
+    const doc = deserialize(serialize(JSON.parse('{"a":1,"__proto__":{"x":2},"b":[{"__proto__":3}]}')));
+    const out = toPlain(doc) as Record<string, unknown>;
+    expect(Object.keys(out)).toEqual(['a', '__proto__', 'b']);
+    expect(Object.getOwnPropertyDescriptor(out, '__proto__')?.value).toEqual(JSON.parse('{"x":2}'));
+    expect(JSON.stringify(out)).toBe('{"a":1,"__proto__":{"x":2},"b":[{"__proto__":3}]}');
+    expect(Object.getPrototypeOf(out)).toBe(Object.prototype);
+  });
+
   it('maps invalid dates to null', () => {
     expect(toPlain({ d: new Date(NaN) })).toEqual({ d: null });
   });
@@ -64,6 +73,13 @@ describe('toQueryable', () => {
     expect(v.bin).toBe('aGk=');
     expect(v.keep).toBe(oid);
     expect(v.arr).toEqual([1, 'x']);
+  });
+
+  it('converts inside a field named __proto__ without touching the prototype', () => {
+    const doc = deserialize(serialize(JSON.parse('{"__proto__":{"n":1}}')), { promoteValues: false }) as Record<string, unknown>;
+    const out = toQueryable(doc);
+    expect(Object.getPrototypeOf(out)).toBe(Object.prototype);
+    expect(Object.getOwnPropertyDescriptor(out, '__proto__')?.value).toEqual(JSON.parse('{"n":1}'));
   });
 
   it('returns the same reference when nothing needs converting', () => {

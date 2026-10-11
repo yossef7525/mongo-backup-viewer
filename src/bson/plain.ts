@@ -53,7 +53,11 @@ export function toPlain(v: unknown): unknown {
     }
   }
   const out: Record<string, unknown> = {};
-  for (const [k, val] of Object.entries(v)) out[k] = toPlain(val);
+  for (const [k, val] of Object.entries(v)) {
+    // Plain assignment to "__proto__" would set the prototype and drop the field.
+    if (k === '__proto__') Object.defineProperty(out, k, { value: toPlain(val), enumerable: true, writable: true, configurable: true });
+    else out[k] = toPlain(val);
+  }
   return out;
 }
 
@@ -91,6 +95,7 @@ export function toQueryable<T>(v: T): T {
   let out: Record<string, unknown> | null = null;
   for (const [k, val] of Object.entries(v)) {
     const c = toQueryable(val);
+    // The spread copies "__proto__" as an own data property, so assigning to it below stays a plain field write.
     if (c !== val) (out ??= { ...(v as Record<string, unknown>) })[k] = c;
   }
   return (out ?? v) as T;
