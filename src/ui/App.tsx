@@ -43,13 +43,31 @@ export function App() {
   }, []);
 
   const demoRequested = useRef(false);
+  const demoLoading = useRef(false);
   const loadDemo = useCallback(async () => {
-    const res = await fetch(`${import.meta.env.BASE_URL}demo.gz`);
-    let blob = await res.blob();
-    // Some static servers (e.g. vite preview) send .gz with Content-Encoding: gzip, so fetch hands back the inflated bytes.
-    const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
-    if (head[0] !== 0x1f || head[1] !== 0x8b) blob = await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
-    addFiles([new File([blob], 'demo-shop.gz')]);
+    if (demoLoading.current) return;
+    demoLoading.current = true;
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}demo.gz`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      let blob = await res.blob();
+      // Some static servers (e.g. vite preview) send .gz with Content-Encoding: gzip, so fetch hands back the inflated bytes
+      // (an archive starts with 81 99 e2 6d). Anything else, e.g. an SPA index.html fallback, is not the demo.
+      const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+      const isGzip = head[0] === 0x1f && head[1] === 0x8b;
+      if (!isGzip) {
+        if (head[0] !== 0x81 || head[1] !== 0x99) throw new Error('demo.gz is not a mongodump archive');
+        if (typeof CompressionStream === 'undefined') throw new Error('This browser cannot prepare the demo (CompressionStream missing)');
+        blob = await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+      }
+      addFiles([new File([blob], 'demo-shop.gz')]);
+    } catch (e) {
+      const archiveId = nextId.current++;
+      const message = e instanceof Error ? e.message : String(e);
+      setArchives((a) => [...a, { archiveId, fileName: 'demo-shop.gz', db: null, serverVersion: null, collections: [], error: { code: 'generic', message } }]);
+    } finally {
+      demoLoading.current = false;
+    }
   }, [addFiles]);
 
   useEffect(() => {
