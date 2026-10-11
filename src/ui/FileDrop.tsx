@@ -54,9 +54,7 @@ export function FileDrop({ onFiles, variant, dragging = false, children }: Props
           {t('drop.chooseFolder')}
         </button>
       </div>
-      <p className="muted small">
-        <bdi dir="ltr">{t('drop.hint')}</bdi>
-      </p>
+      <p className="muted small">{t('drop.hint')}</p>
       {children}
     </div>
   );
