@@ -142,7 +142,7 @@ code, .mono { font-family: var(--mono); }
 .segmented button { border: 0; padding: 4px 12px; background: var(--surface); cursor: pointer; }
 .segmented button[aria-pressed="true"] { background: var(--accent); color: var(--accent-contrast); }
 
-.table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); max-block-size: 65dvh; }
+.table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); max-block-size: max(320px, calc(100dvh - 400px)); }
 .results { border-collapse: collapse; font-size: 13px; min-inline-size: 100%; }
 .results th, .results td { padding: 6px 10px; border-block-end: 1px solid var(--border); text-align: start; white-space: nowrap; max-inline-size: 320px; overflow: hidden; text-overflow: ellipsis; }
 .results th { position: sticky; inset-block-start: 0; background: var(--surface-2); font-weight: 600; z-index: 1; }

@@ -42,6 +42,29 @@ export function App() {
     setSelected((s) => (s && s.key.startsWith(`${archiveId}/`) ? null : s));
   }, []);
 
+  const demoRequested = useRef(false);
+  const loadDemo = useCallback(async () => {
+    const res = await fetch(`${import.meta.env.BASE_URL}demo.gz`);
+    let blob = await res.blob();
+    // Some static servers (e.g. vite preview) send .gz with Content-Encoding: gzip, so fetch hands back the inflated bytes.
+    const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+    if (head[0] !== 0x1f || head[1] !== 0x8b) blob = await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+    addFiles([new File([blob], 'demo-shop.gz')]);
+  }, [addFiles]);
+
+  useEffect(() => {
+    if (demoRequested.current || !new URLSearchParams(location.search).has('demo')) return;
+    demoRequested.current = true; // StrictMode runs effects twice in dev
+    void loadDemo();
+  }, [loadDemo]);
+
+  useEffect(() => {
+    const wanted = new URLSearchParams(location.search).get('demo');
+    if (!wanted || selected) return;
+    const match = archives.flatMap((a) => a.collections).find((c) => c.name === wanted);
+    if (match) setSelected(match);
+  }, [archives, selected]);
+
   useEffect(() => {
     const hasFiles = (e: DragEvent) => !!e.dataTransfer?.types.includes('Files');
     const over = (e: DragEvent) => {
@@ -88,7 +111,11 @@ export function App() {
       {empty ? (
         <main className="welcome">
           <p className="tagline">{t('app.tagline')}</p>
-          <FileDrop variant="hero" dragging={dragging} onFiles={addFiles} />
+          <FileDrop variant="hero" dragging={dragging} onFiles={addFiles}>
+            <button type="button" className="btn btn--ghost" onClick={() => void loadDemo()}>
+              {t('drop.tryDemo')}
+            </button>
+          </FileDrop>
         </main>
       ) : (
         <div className="workspace">

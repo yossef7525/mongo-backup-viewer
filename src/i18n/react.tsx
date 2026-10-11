@@ -9,7 +9,7 @@ interface I18nState {
 const I18nContext = createContext<I18nState>({ locale: 'en', setLocale: () => {} });
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<LocaleCode>(() => detectLocale(navigator.languages ?? [navigator.language], readStoredLocale()));
+  const [locale, setLocaleState] = useState<LocaleCode>(() => detectLocale(navigator.languages ?? [navigator.language], new URLSearchParams(location.search).get('lang') ?? readStoredLocale()));
   useEffect(() => applyDocumentLocale(locale), [locale]);
   const value = useMemo<I18nState>(
     () => ({
