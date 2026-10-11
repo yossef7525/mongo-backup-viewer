@@ -38,15 +38,36 @@ export function ExportDialog({ collection, input, count, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [format, setFormat] = useState<ExportFormat>('json');
   const [name, setName] = useState(collection.name);
-  const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+  const [phase, setPhaseState] = useState<Phase>({ kind: 'idle' });
+  const jobRef = useRef<number | null>(null);
+  const mounted = useRef(true);
+  const starting = useRef(false);
+  const setPhase = (p: Phase) => {
+    if (mounted.current) setPhaseState(p);
+  };
   const { extension, mime } = exportFileInfo(format);
   const fileName = `${name.trim() || collection.name}${extension}`;
 
   useEffect(() => {
+    mounted.current = true;
     dialog.current?.showModal();
+    return () => {
+      mounted.current = false;
+      if (jobRef.current !== null) backend.cancel(jobRef.current);
+    };
   }, []);
 
   const start = async () => {
+    if (starting.current) return;
+    starting.current = true;
+    try {
+      await run();
+    } finally {
+      starting.current = false;
+    }
+  };
+
+  const run = async () => {
     let target: FileSystemFileHandle | null = null;
     if (window.showSaveFilePicker) {
       try {
@@ -64,12 +85,15 @@ export function ExportDialog({ collection, input, count, onClose }: Props) {
         onChunk: (text) => parts.push(text),
       },
     );
+    jobRef.current = job.jobId;
     setPhase({ kind: 'running', percent: 0, jobId: job.jobId });
     try {
       const r = await job.promise;
+      jobRef.current = null;
       if (!target) downloadBlob(new Blob(parts, { type: mime }), fileName);
       setPhase({ kind: 'done', count: r.count });
     } catch (e) {
+      jobRef.current = null;
       setPhase(isAborted(e) ? { kind: 'idle' } : { kind: 'error', message: (e as Error).message });
     }
   };
@@ -80,7 +104,10 @@ export function ExportDialog({ collection, input, count, onClose }: Props) {
     <dialog
       ref={dialog}
       className="dialog"
-      onClose={onClose}
+      onClose={() => {
+        if (jobRef.current !== null) backend.cancel(jobRef.current);
+        onClose();
+      }}
       onCancel={(e) => {
         if (running) e.preventDefault();
       }}
