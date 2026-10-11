@@ -52,11 +52,11 @@ export function App() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let blob = await res.blob();
       // Some static servers (e.g. vite preview) send .gz with Content-Encoding: gzip, so fetch hands back the inflated bytes
-      // (an archive starts with 81 99 e2 6d). Anything else, e.g. an SPA index.html fallback, is not the demo.
-      const head = new Uint8Array(await blob.slice(0, 2).arrayBuffer());
+      // (an archive starts with 6d e2 99 81, the little-endian magic 0x8199e26d). Anything else, e.g. an SPA index.html fallback, is not the demo.
+      const head = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
       const isGzip = head[0] === 0x1f && head[1] === 0x8b;
       if (!isGzip) {
-        if (head[0] !== 0x81 || head[1] !== 0x99) throw new Error('demo.gz is not a mongodump archive');
+        if (head[0] !== 0x6d || head[1] !== 0xe2 || head[2] !== 0x99 || head[3] !== 0x81) throw new Error('demo.gz is not a mongodump archive');
         if (typeof CompressionStream === 'undefined') throw new Error('This browser cannot prepare the demo (CompressionStream missing)');
         blob = await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
       }
