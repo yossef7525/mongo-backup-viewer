@@ -153,6 +153,11 @@ code, .mono { font-family: var(--mono); }
 .results th, .results td { padding: 6px 10px; border-block-end: 1px solid var(--border); text-align: start; white-space: nowrap; max-inline-size: 320px; overflow: hidden; text-overflow: ellipsis; }
 .results th { position: sticky; inset-block-start: 0; background: var(--surface-2); font-weight: 600; z-index: 1; }
 .results tbody tr:hover { background: var(--surface-2); }
+.results td.cell--branch { cursor: default; }
+.results td.cell--branch:focus-visible { outline-offset: -2px; }
+
+.vpop { position: fixed; z-index: 20; max-inline-size: min(480px, calc(100vw - 16px)); max-block-size: min(360px, calc(100dvh - 16px)); overflow: auto; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+.vpop__body { font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
 
 .v { font-family: var(--mono); font-size: 12.5px; }
 .v--string { color: var(--t-string); font-family: var(--font); font-size: 13px; }

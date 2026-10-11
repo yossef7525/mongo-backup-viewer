@@ -3,7 +3,8 @@ import { useT } from '../i18n/react';
 import { describeValue, isBranch } from './value';
 import { Value, type Doc } from './Value';
 
-function Node({ name, value, depth }: { name?: string; value: unknown; depth: number }) {
+/** One key/value of the tree; branches are collapsible and start open for the first two levels. */
+export function JsonNode({ name, value, depth }: { name?: string; value: unknown; depth: number }) {
   const view = describeValue(value);
   const label = name !== undefined && (
     <span className="jt__key" dir="auto">
@@ -27,7 +28,7 @@ function Node({ name, value, depth }: { name?: string; value: unknown; depth: nu
       </summary>
       <div className="jt__children">
         {entries.map(([k, v]) => (
-          <Node key={k} name={k} value={v} depth={depth + 1} />
+          <JsonNode key={k} name={k} value={v} depth={depth + 1} />
         ))}
       </div>
     </details>
@@ -51,7 +52,7 @@ function DocCard({ doc }: { doc: Doc }) {
       <button type="button" className="btn btn--small doccard__copy" onClick={copy}>
         {copied ? t('results.copied') : t('results.copy')}
       </button>
-      <Node value={doc} depth={0} />
+      <JsonNode value={doc} depth={0} />
     </div>
   );
 }

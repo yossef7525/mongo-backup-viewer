@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { describeValue, isBranch } from './value';
 import { Value, type Doc } from './Value';
+import { PopoverCell } from './ValuePopover';
 
-const titleOf = (v: unknown) => (isBranch(describeValue(v)) ? JSON.stringify(v).slice(0, 500) : describeValue(v).text);
 
 export function ResultsTable({ docs }: { docs: Doc[] }) {
   const columns = useMemo(() => {
@@ -26,11 +26,21 @@ export function ResultsTable({ docs }: { docs: Doc[] }) {
         <tbody>
           {docs.map((d, i) => (
             <tr key={i}>
-              {columns.map((c) => (
-                <td key={c} title={c in d ? titleOf(d[c]) : undefined}>
-                  {c in d ? <Value v={d[c]} /> : null}
-                </td>
-              ))}
+              {columns.map((c) => {
+                if (!Object.hasOwn(d, c)) return <td key={c} />;
+                const v = d[c];
+                const view = describeValue(v);
+                // Arrays and objects open a JSON tree popover; scalars keep the native tooltip for long text.
+                return isBranch(view) ? (
+                  <PopoverCell key={c} value={v}>
+                    <Value v={v} />
+                  </PopoverCell>
+                ) : (
+                  <td key={c} title={view.text}>
+                    <Value v={v} />
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
