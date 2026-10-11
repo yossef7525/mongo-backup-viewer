@@ -1,4 +1,4 @@
-import type { ArchiveError } from '../archive/open';
+import type { OpenError } from '../archive/open';
 import type { IndexInfo } from '../archive/parser';
 import type { ExportFormat } from '../export/writers';
 import type { QueryInput } from '../query/spec';
@@ -13,7 +13,7 @@ export interface CollectionSummary {
   indexes: IndexInfo[];
 }
 
-export type SummaryError = ArchiveError | { code: 'generic'; message: string };
+export type SummaryError = OpenError;
 
 export interface ArchiveSummary {
   archiveId: number;

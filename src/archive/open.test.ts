@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { gzipSync } from 'node:zlib';
-import { openArchive } from './open';
+import { ArchiveFormatError } from './parser';
+import { classifyOpenError, openArchive } from './open';
 import { encodeArchive } from './testing/encodeArchive';
 
 const archive = encodeArchive([
@@ -65,5 +66,18 @@ describe('openArchive', () => {
     const ac = new AbortController();
     ac.abort();
     await expect(openArchive(blob(gzipSync(archive)), { signal: ac.signal })).rejects.toMatchObject({ name: 'AbortError' });
+  });
+});
+
+describe('classifyOpenError', () => {
+  it('keeps archive format errors', () => {
+    expect(classifyOpenError(new ArchiveFormatError('corrupt', 'bad', 42))).toEqual({ code: 'corrupt', message: 'bad', offset: 42 });
+  });
+  it('treats a TypeError from the gunzip stream as truncated', () => {
+    expect(classifyOpenError(new TypeError(''))).toEqual({ code: 'truncated', message: 'Compressed data ended unexpectedly' });
+  });
+  it('reports any other failure as generic with its message', () => {
+    expect(classifyOpenError(new RangeError('Array buffer allocation failed'))).toEqual({ code: 'generic', message: 'Array buffer allocation failed' });
+    expect(classifyOpenError('weird')).toEqual({ code: 'generic', message: 'weird' });
   });
 });

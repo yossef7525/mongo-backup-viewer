@@ -9,6 +9,17 @@ export interface ArchiveError {
   offset?: number;
 }
 
+/** Any failure while opening: a format/gzip problem, or something unexpected (e.g. an allocation failure). */
+export type OpenError = ArchiveError | { code: 'generic'; message: string };
+
+/** Maps a non-abort failure of the gunzip + parse pipeline to an error shown to the user. */
+export function classifyOpenError(e: unknown): OpenError {
+  if (e instanceof ArchiveFormatError) return { code: e.code, message: e.message, offset: e.offset };
+  // DecompressionStream fails with an (often empty) TypeError on truncated or damaged gzip data.
+  if (e instanceof TypeError) return { code: 'truncated', message: e.message || 'Compressed data ended unexpectedly' };
+  return { code: 'generic', message: e instanceof Error ? e.message : String(e) };
+}
+
 export interface OpenedCollection {
   ns: string;
   meta: CollectionMeta;
@@ -20,7 +31,7 @@ export interface OpenedArchive {
   header: ArchiveHeader | null;
   db: string | null;
   collections: OpenedCollection[];
-  error: ArchiveError | null;
+  error: OpenError | null;
 }
 
 const isAbort = (e: unknown) => e instanceof Error && e.name === 'AbortError';
@@ -86,12 +97,7 @@ export async function openArchive(
     );
   } catch (e) {
     if (isAbort(e) || opts.signal?.aborted) throw e;
-    if (e instanceof ArchiveFormatError) {
-      result.error = { code: e.code, message: e.message, offset: e.offset };
-    } else {
-      // DecompressionStream fails with an empty TypeError on truncated or damaged gzip data.
-      result.error = { code: 'truncated', message: (e as Error)?.message || 'Compressed data ended unexpectedly' };
-    }
+    result.error = classifyOpenError(e);
   }
 
   // Sorted by namespace (db, then collection): an archive made without --db holds every database, admin and config included.
