@@ -43,3 +43,16 @@ describe.each(LOCALES.map((l) => l.code))('locale %s', (code) => {
     for (const [k, v] of Object.entries(msgs)) expect(v.trim(), k).not.toBe('');
   });
 });
+
+describe('technical tokens', () => {
+  const TOKENS = ['mongodump', 'mongoimport', '--archive', '--gzip', '--jsonArray', '.gz', 'ObjectId'];
+  const strip = (s: string) => s.replace(/[⁦⁩]/g, '');
+  it.each(LOCALES.map((l) => l.code))('%s keeps the tokens of en', (code) => {
+    for (const [k, v] of Object.entries(en)) {
+      for (const t of TOKENS.filter((t) => v.includes(t))) {
+        const got = MESSAGES[code][k];
+        expect(strip(got), `${k}: ${t}`).toContain(t);
+      }
+    }
+  });
+});
