@@ -6,6 +6,8 @@ export type Call = DistributiveOmit<Exclude<Request, { type: 'cancel' }>, 'jobId
 export interface WorkerLike {
   postMessage(msg: unknown): void;
   onmessage: ((e: MessageEvent) => void) | null;
+  onerror?: ((e: ErrorEvent) => void) | null;
+  onmessageerror?: ((e: MessageEvent) => void) | null;
 }
 
 export class BackendError extends Error {
@@ -37,6 +39,14 @@ export class BackendClient {
 
   constructor(private worker: WorkerLike) {
     worker.onmessage = (e) => this.receive(e.data as Response);
+    worker.onerror = (e) => this.failAll((e as ErrorEvent | undefined)?.message || 'Worker failed');
+    worker.onmessageerror = () => this.failAll('Worker failed');
+  }
+
+  private failAll(message: string): void {
+    const all = [...this.pending.values()];
+    this.pending.clear();
+    for (const p of all) p.reject(new BackendError('failed', message));
   }
 
   call<C extends Call>(req: C, handlers: Handlers = {}): { jobId: number; promise: Promise<ReplyMap[C['type']]> } {
@@ -44,7 +54,13 @@ export class BackendClient {
     const promise = new Promise<ReplyMap[C['type']]>((resolve, reject) => {
       this.pending.set(jobId, { resolve: resolve as (v: unknown) => void, reject, ...handlers });
     });
-    this.worker.postMessage({ ...req, jobId });
+    try {
+      this.worker.postMessage({ ...req, jobId });
+    } catch (err) {
+      const p = this.pending.get(jobId);
+      this.pending.delete(jobId);
+      p?.reject(new BackendError('failed', (err as Error)?.message ?? String(err)));
+    }
     return { jobId, promise };
   }
 
