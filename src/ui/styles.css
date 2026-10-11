@@ -63,6 +63,8 @@ code, .mono { font-family: var(--mono); }
 .brand { display: flex; align-items: center; gap: 10px; min-inline-size: 0; }
 .brand h1 { font-size: 16px; margin: 0; white-space: nowrap; }
 .topbar__end { display: flex; align-items: center; gap: 12px; }
+.repo-link { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); text-decoration: none; white-space: nowrap; }
+.repo-link:hover { color: var(--text); background: var(--surface-2); }
 .lang { padding: 4px 8px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
 
 .badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
