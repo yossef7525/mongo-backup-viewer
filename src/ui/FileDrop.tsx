@@ -1,6 +1,6 @@
 import { useRef, type ChangeEvent, type ReactNode } from 'react';
 import { useT } from '../i18n/react';
-import { onlyGz } from './files';
+import { onlyGz, sortFiles } from './files';
 
 interface Props {
   onFiles(files: File[]): void;
@@ -15,15 +15,17 @@ export function FileDrop({ onFiles, variant, dragging = false, children }: Props
   const t = useT();
   const filesInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
-  const pick = (e: ChangeEvent<HTMLInputElement>) => {
-    const list = onlyGz([...(e.target.files ?? [])]);
+  // Picked files all go through (the worker explains what is wrong with a non-archive); a picked folder keeps only its .gz files.
+  const pick = (e: ChangeEvent<HTMLInputElement>, folder: boolean) => {
+    const files = [...(e.target.files ?? [])];
+    const list = folder ? onlyGz(files) : sortFiles(files);
     e.target.value = '';
     if (list.length) onFiles(list);
   };
   const inputs = (
     <>
-      <input ref={filesInput} type="file" multiple accept=".gz" hidden onChange={pick} />
-      <input ref={folderInput} type="file" hidden onChange={pick} {...folderAttrs} />
+      <input ref={filesInput} type="file" multiple accept=".gz" hidden onChange={(e) => pick(e, false)} />
+      <input ref={folderInput} type="file" hidden onChange={(e) => pick(e, true)} {...folderAttrs} />
     </>
   );
 
