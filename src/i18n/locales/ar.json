@@ -28,6 +28,7 @@
   "error.truncated": "انتهى الأرشيف بشكل مفاجئ. المجموعات التي قُرئت حتى الآن متاحة.",
   "error.corrupt": "الأرشيف تالف عند البايت {offset}. المجموعات التي قُرئت حتى الآن متاحة.",
   "error.generic": "حدث خطأ: {message}",
+  "error.boundary": "حدث خطأ أثناء عرض هذه الواجهة.",
   "query.filter": "التصفية",
   "query.projection": "الإسقاط",
   "query.sort": "الترتيب",
@@ -83,5 +84,6 @@
   "export.failed": "فشل التصدير: {message}",
   "common.cancel": "إلغاء",
   "common.close": "إغلاق",
+  "common.reload": "إعادة التحميل",
   "lang.label": "اللغة"
 }

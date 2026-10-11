@@ -24,6 +24,7 @@
   "error.truncated": "Das Archiv endet unerwartet. Bisher gelesene Collections sind verfügbar.",
   "error.corrupt": "Das Archiv ist bei Byte {offset} beschädigt. Bisher gelesene Collections sind verfügbar.",
   "error.generic": "Etwas ist schiefgelaufen: {message}",
+  "error.boundary": "Beim Anzeigen dieser Ansicht ist ein Fehler aufgetreten.",
   "query.filter": "Filter",
   "query.projection": "Projektion",
   "query.sort": "Sortierung",
@@ -67,5 +68,6 @@
   "export.failed": "Export fehlgeschlagen: {message}",
   "common.cancel": "Abbrechen",
   "common.close": "Schließen",
+  "common.reload": "Neu laden",
   "lang.label": "Sprache"
 }

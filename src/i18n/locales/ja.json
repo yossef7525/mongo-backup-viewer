@@ -23,6 +23,7 @@
   "error.truncated": "アーカイブが途中で終了しています。ここまでに読み込んだコレクションは利用できます。",
   "error.corrupt": "アーカイブがバイト {offset} で破損しています。ここまでに読み込んだコレクションは利用できます。",
   "error.generic": "問題が発生しました: {message}",
+  "error.boundary": "この画面の表示中に問題が発生しました。",
   "query.filter": "フィルター",
   "query.projection": "プロジェクション",
   "query.sort": "ソート",
@@ -63,5 +64,6 @@
   "export.failed": "エクスポートに失敗しました: {message}",
   "common.cancel": "キャンセル",
   "common.close": "閉じる",
+  "common.reload": "再読み込み",
   "lang.label": "言語"
 }

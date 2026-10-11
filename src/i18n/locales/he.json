@@ -25,6 +25,7 @@
   "error.truncated": "הארכיון נקטע באמצע. האוספים שנקראו עד כה זמינים.",
   "error.corrupt": "הארכיון פגום בבית {offset}. האוספים שנקראו עד כה זמינים.",
   "error.generic": "משהו השתבש: {message}",
+  "error.boundary": "משהו השתבש בהצגת התצוגה הזו.",
   "query.filter": "סינון",
   "query.projection": "שדות להצגה (Projection)",
   "query.sort": "מיון",
@@ -71,5 +72,6 @@
   "export.failed": "הייצוא נכשל: {message}",
   "common.cancel": "ביטול",
   "common.close": "סגירה",
+  "common.reload": "טעינה מחדש",
   "lang.label": "שפה"
 }

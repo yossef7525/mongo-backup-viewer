@@ -26,6 +26,7 @@
   "error.truncated": "Архив неожиданно оборвался. Прочитанные к этому моменту коллекции доступны.",
   "error.corrupt": "Архив повреждён на байте {offset}. Прочитанные к этому моменту коллекции доступны.",
   "error.generic": "Что-то пошло не так: {message}",
+  "error.boundary": "Не удалось отобразить этот раздел.",
   "query.filter": "Фильтр",
   "query.projection": "Проекция",
   "query.sort": "Сортировка",
@@ -75,5 +76,6 @@
   "export.failed": "Не удалось экспортировать: {message}",
   "common.cancel": "Отмена",
   "common.close": "Закрыть",
+  "common.reload": "Перезагрузить",
   "lang.label": "Язык"
 }

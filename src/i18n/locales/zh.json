@@ -23,6 +23,7 @@
   "error.truncated": "归档意外结束。已读取的集合仍可使用。",
   "error.corrupt": "归档在字节 {offset} 处损坏。已读取的集合仍可使用。",
   "error.generic": "出错了：{message}",
+  "error.boundary": "显示此视图时出错。",
   "query.filter": "筛选",
   "query.projection": "投影",
   "query.sort": "排序",
@@ -63,5 +64,6 @@
   "export.failed": "导出失败：{message}",
   "common.cancel": "取消",
   "common.close": "关闭",
+  "common.reload": "重新加载",
   "lang.label": "语言"
 }

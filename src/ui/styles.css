@@ -130,6 +130,8 @@ code, .mono { font-family: var(--mono); }
 .notice { margin: 0; padding: 8px 12px; border-radius: var(--radius); }
 .notice--warn { background: var(--warn-soft); color: var(--warn); }
 .notice--error { background: var(--error-soft); color: var(--error); }
+.boundary { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#root > .boundary { margin: 16px; }
 
 .querybar { display: grid; gap: 8px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 .querybar__row { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }

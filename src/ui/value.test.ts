@@ -24,6 +24,25 @@ describe('describeValue', () => {
     expect(describeValue(input)).toEqual({ kind, text });
   });
 
+  it.each([
+    [{ $binary: null }],
+    [{ $binary: 'aGk=' }],
+    [{ $binary: { subType: '00' } }],
+    [{ $binary: { base64: '***', subType: '04' } }],
+    [{ $binary: { base64: '%%%', subType: '00' } }],
+    [{ $regularExpression: null }],
+    [{ $regularExpression: '^a' }],
+    [{ $regularExpression: { pattern: '^a' } }],
+    [{ $timestamp: null }],
+    [{ $timestamp: 'x' }],
+    [{ $timestamp: { t: 5 } }],
+    [{ $date: null }],
+    [{ $date: {} }],
+    [{ $date: { $numberLong: 5 } }],
+  ])('falls back to a plain object for malformed %j', (input) => {
+    expect(describeValue(input)).toEqual({ kind: 'object', text: '{1}' });
+  });
+
   it('isBranch', () => {
     expect(isBranch(describeValue([1]))).toBe(true);
     expect(isBranch(describeValue({ $oid: 'x' }))).toBe(false);

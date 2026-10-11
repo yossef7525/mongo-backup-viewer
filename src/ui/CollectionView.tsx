@@ -5,6 +5,7 @@ import { isAborted } from '../worker/client';
 import type { CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
 import { formatBytes, pct } from './format';
+import { ErrorBoundary } from './ErrorBoundary';
 import { ExportDialog } from './ExportDialog';
 import { JsonTree } from './JsonTree';
 import { Pager } from './Pager';
@@ -134,7 +135,9 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
         </p>
       )}
       {ready && status.returned === 0 && <p className="placeholder">{t('results.empty')}</p>}
-      {ready && docs.length > 0 && (view === 'table' ? <ResultsTable docs={docs} /> : <JsonTree docs={docs} />)}
+      {ready && docs.length > 0 && (
+        <ErrorBoundary key={`${view}/${page}`}>{view === 'table' ? <ResultsTable docs={docs} /> : <JsonTree docs={docs} />}</ErrorBoundary>
+      )}
       {ready && status.returned > PAGE_SIZE && <Pager page={page} pageSize={PAGE_SIZE} total={status.returned} onPage={setPage} />}
       {exporting && ready && <ExportDialog collection={collection} input={applied} count={status.returned} onClose={() => setExporting(false)} />}
     </section>

@@ -25,6 +25,7 @@
   "error.truncated": "L'archive se termine de façon inattendue. Les collections lues jusqu'ici sont disponibles.",
   "error.corrupt": "L'archive est endommagée à l'octet {offset}. Les collections lues jusqu'ici sont disponibles.",
   "error.generic": "Une erreur est survenue : {message}",
+  "error.boundary": "Un problème est survenu lors de l’affichage de cette vue.",
   "query.filter": "Filtre",
   "query.projection": "Projection",
   "query.sort": "Tri",
@@ -71,5 +72,6 @@
   "export.failed": "Échec de l'export : {message}",
   "common.cancel": "Annuler",
   "common.close": "Fermer",
+  "common.reload": "Recharger",
   "lang.label": "Langue"
 }

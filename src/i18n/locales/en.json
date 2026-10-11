@@ -24,6 +24,7 @@
   "error.truncated": "The archive ended unexpectedly. Collections read so far are available.",
   "error.corrupt": "The archive is damaged at byte {offset}. Collections read so far are available.",
   "error.generic": "Something went wrong: {message}",
+  "error.boundary": "Something went wrong displaying this view.",
   "query.filter": "Filter",
   "query.projection": "Projection",
   "query.sort": "Sort",
@@ -67,5 +68,6 @@
   "export.failed": "Export failed: {message}",
   "common.cancel": "Cancel",
   "common.close": "Close",
+  "common.reload": "Reload",
   "lang.label": "Language"
 }

@@ -25,6 +25,7 @@
   "error.truncated": "O arquivo terminou de forma inesperada. As coleções lidas até aqui estão disponíveis.",
   "error.corrupt": "O arquivo está danificado no byte {offset}. As coleções lidas até aqui estão disponíveis.",
   "error.generic": "Algo deu errado: {message}",
+  "error.boundary": "Ocorreu um erro ao exibir esta visualização.",
   "query.filter": "Filtro",
   "query.projection": "Projeção",
   "query.sort": "Ordenação",
@@ -71,5 +72,6 @@
   "export.failed": "Falha na exportação: {message}",
   "common.cancel": "Cancelar",
   "common.close": "Fechar",
+  "common.reload": "Recarregar",
   "lang.label": "Idioma"
 }
