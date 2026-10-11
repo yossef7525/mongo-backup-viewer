@@ -94,7 +94,8 @@ export async function openArchive(
     }
   }
 
-  result.collections = [...byNs.values()].sort((a, b) => a.meta.collection.localeCompare(b.meta.collection));
+  // Sorted by namespace (db, then collection): an archive made without --db holds every database, admin and config included.
+  result.collections = [...byNs.values()].sort((a, b) => a.meta.db.localeCompare(b.meta.db) || a.meta.collection.localeCompare(b.meta.collection));
   result.db ??= result.collections[0]?.meta.db ?? null;
   return result;
 }

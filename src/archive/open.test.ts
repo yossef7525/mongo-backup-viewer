@@ -24,6 +24,21 @@ describe('openArchive', () => {
     expect(progress.at(-1)).toBe(gzipSync(archive).length);
   });
 
+  it('keeps collections of every database in a multi-db archive, sorted by ns', async () => {
+    const multi = encodeArchive([
+      { db: 'shop', collection: 'users', docs: [{ _id: 1 }] },
+      { db: 'admin', collection: 'users', docs: [{ _id: 1 }, { _id: 2 }] },
+      { db: 'admin', collection: 'system.version', docs: [{ _id: 'v' }] },
+    ]);
+    const a = await openArchive(blob(gzipSync(multi)));
+    expect(a.error).toBeNull();
+    expect(a.collections.map((c) => [c.ns, c.meta.db, c.meta.collection, c.store.count])).toEqual([
+      ['admin.system.version', 'admin', 'system.version', 1],
+      ['admin.users', 'admin', 'users', 2],
+      ['shop.users', 'shop', 'users', 1],
+    ]);
+  });
+
   it('reports notGzip for a plain file', async () => {
     const a = await openArchive(blob(archive));
     expect(a.error?.code).toBe('notGzip');

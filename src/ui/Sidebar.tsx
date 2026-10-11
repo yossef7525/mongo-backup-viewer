@@ -25,6 +25,17 @@ export function archiveErrorText(t: T, e: SummaryError): string {
   }
 }
 
+/** Groups collections by database, keeping their (namespace-sorted) order. */
+export function groupByDb(colls: CollectionSummary[]): [string, CollectionSummary[]][] {
+  const groups = new Map<string, CollectionSummary[]>();
+  for (const c of colls) {
+    const list = groups.get(c.db);
+    if (list) list.push(c);
+    else groups.set(c.db, [c]);
+  }
+  return [...groups];
+}
+
 interface Props {
   archives: ArchiveSummary[];
   loading: LoadingFile[];
@@ -53,20 +64,12 @@ export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, on
           <div className="muted small">{t('sidebar.reading', { percent: l.percent })}</div>
         </div>
       ))}
-      {archives.map((a) => (
-        <section key={a.archiveId} className="archive">
-          <header className="archive__head">
-            <div className="archive__titles">
-              <div className="archive__db" dir="auto">{a.db ?? a.fileName}</div>
-              <div className="archive__file" dir="auto">{a.fileName}</div>
-            </div>
-            <button type="button" className="icon-btn" onClick={() => onRemove(a.archiveId)} aria-label={t('sidebar.remove', { name: a.fileName })} title={t('sidebar.remove', { name: a.fileName })}>
-              ×
-            </button>
-          </header>
-          {a.error && <p className="archive__error" role="alert">{archiveErrorText(t, a.error)}</p>}
+      {archives.map((a) => {
+        const groups = groupByDb(a.collections);
+        const multiDb = groups.length > 1;
+        const collList = (colls: CollectionSummary[]) => (
           <ul className="colls">
-            {a.collections.map((c) => (
+            {colls.map((c) => (
               <li key={c.key}>
                 <button type="button" className={`coll${c.key === selectedKey ? ' coll--active' : ''}`} aria-current={c.key === selectedKey || undefined} onClick={() => onSelect(c)}>
                   <span className="coll__name" dir="auto">{c.name}</span>
@@ -76,8 +79,36 @@ export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, on
               </li>
             ))}
           </ul>
-        </section>
-      ))}
+        );
+        return (
+          <section key={a.archiveId} className="archive">
+            <header className="archive__head">
+              <div className="archive__titles">
+                {multiDb ? (
+                  <div className="archive__db" dir="auto">{a.fileName}</div>
+                ) : (
+                  <>
+                    <div className="archive__db" dir="auto">{a.db ?? a.fileName}</div>
+                    <div className="archive__file" dir="auto">{a.fileName}</div>
+                  </>
+                )}
+              </div>
+              <button type="button" className="icon-btn" onClick={() => onRemove(a.archiveId)} aria-label={t('sidebar.remove', { name: a.fileName })} title={t('sidebar.remove', { name: a.fileName })}>
+                ×
+              </button>
+            </header>
+            {a.error && <p className="archive__error" role="alert">{archiveErrorText(t, a.error)}</p>}
+            {multiDb
+              ? groups.map(([db, colls]) => (
+                  <div key={db} className="dbgroup">
+                    <h3 className="dbgroup__name" dir="auto">{db}</h3>
+                    {collList(colls)}
+                  </div>
+                ))
+              : collList(a.collections)}
+          </section>
+        );
+      })}
     </aside>
   );
 }

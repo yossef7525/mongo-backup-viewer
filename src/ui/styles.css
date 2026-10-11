@@ -100,6 +100,8 @@ code, .mono { font-family: var(--mono); }
 .archive__db { font-weight: 600; overflow-wrap: anywhere; }
 .archive__file { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .archive__error { margin: 6px 0; padding: 6px 8px; border-radius: 6px; background: var(--error-soft); color: var(--error); font-size: 12px; }
+.dbgroup { margin-block-start: 6px; }
+.dbgroup__name { margin: 0; padding-inline: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); overflow-wrap: anywhere; }
 .colls { list-style: none; margin: 4px 0 0; padding: 0; }
 .coll { display: flex; align-items: center; gap: 6px; inline-size: 100%; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: start; }
 .coll:hover { background: var(--surface-2); }
