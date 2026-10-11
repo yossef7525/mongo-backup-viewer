@@ -4,19 +4,120 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Mongo Backup Viewer</title>
-    <meta name="description" content="Open MongoDB mongodump .gz archives in your browser. Browse collections, filter with MongoDB queries and export to JSON. Files never leave your device." />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <title>Mongo Backup Viewer — open mongodump .gz archives online, filter &amp; export to JSON</title>
+    <meta name="description" content="MongoDB backup viewer: open a mongodump archive (.gz, BSON) in your browser, filter with MongoDB queries and export JSON. Free, no upload, files stay on your device." />
+    <meta name="keywords" content="MongoDB, mongodump, mongorestore alternative, BSON viewer, BSON to JSON, MongoDB backup viewer, archive.gz, Extended JSON, JSON Lines, online, browser" />
+    <meta name="author" content="yossef7525" />
+    <meta name="application-name" content="Mongo Backup Viewer" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#0f7b5f" />
+    <!-- google-site-verification: add <meta name="google-site-verification" content="..." /> here -->
+    <link rel="canonical" href="https://yossef7525.github.io/mongo-backup-viewer/" />
+    <link rel="alternate" hreflang="en" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=en" />
+    <link rel="alternate" hreflang="he" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=he" />
+    <link rel="alternate" hreflang="ar" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=ar" />
+    <link rel="alternate" hreflang="es" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=es" />
+    <link rel="alternate" hreflang="fr" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=fr" />
+    <link rel="alternate" hreflang="de" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=de" />
+    <link rel="alternate" hreflang="pt" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=pt" />
+    <link rel="alternate" hreflang="ru" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=ru" />
+    <link rel="alternate" hreflang="zh" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=zh" />
+    <link rel="alternate" hreflang="ja" href="https://yossef7525.github.io/mongo-backup-viewer/?lang=ja" />
+    <link rel="alternate" hreflang="x-default" href="https://yossef7525.github.io/mongo-backup-viewer/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Mongo Backup Viewer" />
-    <meta property="og:description" content="Open MongoDB mongodump .gz archives in your browser. Filter with MongoDB queries and export to JSON. Nothing is uploaded." />
+    <meta property="og:site_name" content="Mongo Backup Viewer" />
+    <meta property="og:title" content="Mongo Backup Viewer — open mongodump .gz archives online, filter &amp; export to JSON" />
+    <meta property="og:description" content="MongoDB backup viewer: open a mongodump archive (.gz, BSON) in your browser, filter with MongoDB queries and export JSON. Free, no upload, files stay on your device." />
     <meta property="og:url" content="https://yossef7525.github.io/mongo-backup-viewer/" />
     <meta property="og:image" content="https://yossef7525.github.io/mongo-backup-viewer/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Mongo Backup Viewer showing a MongoDB collection opened from a mongodump archive" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="he_IL" />
+    <meta property="og:locale:alternate" content="ar_AR" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:locale:alternate" content="de_DE" />
+    <meta property="og:locale:alternate" content="pt_BR" />
+    <meta property="og:locale:alternate" content="ru_RU" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="ja_JP" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#0f7b5f" />
+    <meta name="twitter:title" content="Mongo Backup Viewer — open mongodump .gz archives online, filter &amp; export to JSON" />
+    <meta name="twitter:description" content="MongoDB backup viewer: open a mongodump archive (.gz, BSON) in your browser, filter with MongoDB queries and export JSON. Free, no upload, files stay on your device." />
+    <meta name="twitter:image" content="https://yossef7525.github.io/mongo-backup-viewer/og.png" />
+    <meta name="twitter:image:alt" content="Mongo Backup Viewer showing a MongoDB collection opened from a mongodump archive" />
+    <script type="application/ld+json">
+    {
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Mongo Backup Viewer",
+          "url": "https://yossef7525.github.io/mongo-backup-viewer/",
+          "description": "Open MongoDB mongodump .gz archives in your browser, browse collections, filter with MongoDB queries and export to JSON. Files never leave your device.",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Any (web browser)",
+          "browserRequirements": "Requires JavaScript, a modern browser (Chrome, Edge, Firefox, Safari)",
+          "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+          },
+          "isAccessibleForFree": true,
+          "inLanguage": [
+                "en",
+                "he",
+                "ar",
+                "es",
+                "fr",
+                "de",
+                "pt",
+                "ru",
+                "zh",
+                "ja"
+          ],
+          "featureList": [
+                "Open mongodump --archive --gzip files",
+                "Browse databases, collections and indexes",
+                "Filter with MongoDB find queries (filter, projection, sort, skip, limit)",
+                "Export to JSON, Extended JSON and JSON Lines",
+                "Runs entirely in the browser, nothing is uploaded",
+                "10 UI languages including right-to-left"
+          ],
+          "screenshot": "https://yossef7525.github.io/mongo-backup-viewer/og.png",
+          "author": {
+                "@type": "Person",
+                "name": "yossef7525",
+                "url": "https://github.com/yossef7525"
+          },
+          "sameAs": [
+                "https://github.com/yossef7525/mongo-backup-viewer"
+          ],
+          "license": "https://opensource.org/licenses/MIT"
+    }
+    </script>
   </head>
   <body>
     <noscript>This app needs JavaScript. It runs entirely in your browser.</noscript>
-    <div id="root"></div>
+    <div id="root">
+      <main style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif;line-height:1.5">
+        <h1>Mongo Backup Viewer</h1>
+        <p>Open a MongoDB <code>mongodump</code> archive (<code>.gz</code>, BSON) directly in your browser, browse databases and collections, filter documents with MongoDB queries and export the result to JSON, Extended JSON or JSON Lines. Everything runs locally, so your backup never leaves your device.</p>
+        <ul>
+          <li>Browse databases, collections and indexes</li>
+          <li>Filter with MongoDB <code>find</code> queries: filter, projection, sort, skip, limit</li>
+          <li>Export to JSON, Extended JSON (mongoimport-compatible) and JSON Lines</li>
+          <li>10 languages, including right-to-left Hebrew and Arabic</li>
+        </ul>
+        <h2>How to create a compatible backup</h2>
+        <pre><code>mongodump --archive=backup.gz --gzip</code></pre>
+        <h2>Privacy</h2>
+        <p>Files are processed in your browser. Nothing is uploaded, and there is no analytics or third-party request.</p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,8 +1,14 @@
 # Mongo Backup Viewer
 
+[![GitHub stars](https://img.shields.io/github/stars/yossef7525/mongo-backup-viewer?style=social)](https://github.com/yossef7525/mongo-backup-viewer)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Live demo](https://img.shields.io/badge/live-demo-0f7b5f.svg)](https://yossef7525.github.io/mongo-backup-viewer/)
+
 Open MongoDB `mongodump` archives in your browser, filter them with MongoDB queries and export to JSON.
 
 **Live:** https://yossef7525.github.io/mongo-backup-viewer/
+
+If this tool helps you, please ⭐ [star the repo](https://github.com/yossef7525/mongo-backup-viewer).
 
 ![Mongo Backup Viewer screenshot](docs/screenshot.png)
 

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yossef7525.github.io/mongo-backup-viewer/sitemap.xml
