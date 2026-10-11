@@ -36,6 +36,8 @@ interface Pending extends Handlers {
 export class BackendClient {
   private next = 1;
   private pending = new Map<number, Pending>();
+  /** Set after a fatal worker error: the worker is gone, so new calls fail fast instead of hanging. */
+  private dead = false;
 
   constructor(private worker: WorkerLike) {
     worker.onmessage = (e) => this.receive(e.data as Response);
@@ -44,6 +46,7 @@ export class BackendClient {
   }
 
   private failAll(message: string): void {
+    this.dead = true;
     const all = [...this.pending.values()];
     this.pending.clear();
     for (const p of all) p.reject(new BackendError('failed', message));
@@ -51,6 +54,7 @@ export class BackendClient {
 
   call<C extends Call>(req: C, handlers: Handlers = {}): { jobId: number; promise: Promise<ReplyMap[C['type']]> } {
     const jobId = this.next++;
+    if (this.dead) return { jobId, promise: Promise.reject(new BackendError('failed', 'Worker stopped')) };
     const promise = new Promise<ReplyMap[C['type']]>((resolve, reject) => {
       this.pending.set(jobId, { resolve: resolve as (v: unknown) => void, reject, ...handlers });
     });
