@@ -14,6 +14,10 @@ describe('shellToJson5', () => {
     );
   });
 
+  it('wraps numeric Date arguments as epoch milliseconds', () => {
+    expect(shellToJson5(`{d: Date(5)}`)).toBe(`{d: {"$date":{"$numberLong":"5"}}}`);
+  });
+
   it('does not touch identifiers that merely end with a helper name', () => {
     expect(shellToJson5(`{myObjectId: 1}`)).toBe(`{myObjectId: 1}`);
   });
@@ -31,6 +35,19 @@ describe('parseQuerySpec', () => {
     expect(r.spec.filter.price.$gt).toEqual(Decimal128.fromString('1.5'));
     expect(r.spec.filter.at.$lt).toEqual(new Date('2026-01-01T00:00:00.000Z'));
     expect(r.spec.filter.name).toBeInstanceOf(BSONRegExp);
+  });
+
+  it('rejects invalid dates', () => {
+    const r = parse({ filter: '{d: ISODate("garbage")}' });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.errors.filter?.code).toBe('invalidJson');
+  });
+
+  it('parses numeric epoch-millisecond Date arguments', () => {
+    const r = parse({ filter: '{d: new Date(1700000000000)}' });
+    if (!r.ok) throw new Error(JSON.stringify(r.errors));
+    expect(r.spec.filter.d).toEqual(new Date(1700000000000));
   });
 
   it('parses projection, sort, skip and limit', () => {

@@ -26,14 +26,15 @@ export type ParseResult = { ok: true; spec: QuerySpec } | { ok: false; errors: P
 const SHELL_CALL =
   /^(?:new\s+)?(ObjectId|ISODate|Date|NumberLong|NumberInt|NumberDecimal|UUID)\(\s*(?:(["'])((?:\\.|(?!\2).)*)\2|(-?\d+(?:\.\d+)?))?\s*\)/;
 
-function wrapShellCall(fn: string, arg: string | undefined): string {
+function wrapShellCall(fn: string, arg: string | undefined, numeric: boolean): string {
   const s = JSON.stringify(arg ?? '');
   switch (fn) {
     case 'ObjectId':
       return `{"$oid":${s}}`;
     case 'ISODate':
     case 'Date':
-      return `{"$date":${arg === undefined ? JSON.stringify(new Date().toISOString()) : s}}`;
+      if (arg === undefined) return `{"$date":${JSON.stringify(new Date().toISOString())}}`;
+      return numeric ? `{"$date":{"$numberLong":${s}}}` : `{"$date":${s}}`;
     case 'NumberLong':
       return `{"$numberLong":${s}}`;
     case 'NumberInt':
@@ -61,7 +62,7 @@ export function shellToJson5(text: string): string {
     if (/[A-Za-z]/.test(ch) && (i === 0 || !/[\w$]/.test(text[i - 1]))) {
       const m = SHELL_CALL.exec(text.slice(i));
       if (m) {
-        out += wrapShellCall(m[1], m[3] ?? m[4]);
+        out += wrapShellCall(m[1], m[3] ?? m[4], m[4] !== undefined);
         i += m[0].length;
         continue;
       }
@@ -70,6 +71,15 @@ export function shellToJson5(text: string): string {
     i++;
   }
   return out;
+}
+
+function hasInvalidDate(v: unknown): boolean {
+  if (v instanceof Date) return Number.isNaN(v.getTime());
+  if (Array.isArray(v)) return v.some(hasInvalidDate);
+  if (v !== null && typeof v === 'object' && Object.getPrototypeOf(v) === Object.prototype) {
+    return Object.values(v).some(hasInvalidDate);
+  }
+  return false;
 }
 
 type FieldResult<T> = { value: T } | { error: QueryError };
@@ -84,7 +94,9 @@ function parseObject(text: string): FieldResult<Document | undefined> {
   }
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return { error: { code: 'notObject' } };
   try {
-    return { value: EJSON.deserialize(raw as Document, { relaxed: true }) as Document };
+    const value = EJSON.deserialize(raw as Document, { relaxed: true }) as Document;
+    if (hasInvalidDate(value)) return { error: { code: 'invalidJson', detail: 'Invalid date' } };
+    return { value };
   } catch (e) {
     return { error: { code: 'invalidJson', detail: (e as Error).message } };
   }
