@@ -1,6 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type InputHTMLAttributes, type KeyboardEvent } from 'react';
 import { applySuggestion, completionContext, shouldAutoOpen, suggest, type CompletionContext, type QueryMode, type Suggestion } from '../query/complete';
 import type { FieldPath } from '../worker/fields';
+import { listKeyAction } from './autocompleteKeys';
 
 const MAX_ITEMS = 100;
 
@@ -23,6 +24,7 @@ export function AutocompleteInput({ value, onValueChange, mode, paths, onKeyDown
   const [list, setList] = useState<List | null>(null);
   const [active, setActive] = useState(0);
   const pendingCaret = useRef<number | null>(null);
+  const composing = useRef(false);
   const optionId = (n: number) => `${listId}-${n}`;
 
   // Restore the caret after inserting a suggestion into the controlled input.
@@ -54,33 +56,26 @@ export function AutocompleteInput({ value, onValueChange, mode, paths, onKeyDown
   };
 
   const keyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.ctrlKey && (e.key === ' ' || e.code === 'Space')) {
-      e.preventDefault();
-      update(value, caretOf(e.currentTarget), true);
-      return;
-    }
-    if (list) {
-      const n = list.items.length;
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setActive((a) => (a + 1) % n);
-          return;
-        case 'ArrowUp':
-          e.preventDefault();
-          setActive((a) => (a - 1 + n) % n);
-          return;
-        case 'Enter':
-        case 'Tab':
-          e.preventDefault();
-          accept(list.items[active]);
-          return;
-        case 'Escape':
-          e.preventDefault();
-          e.stopPropagation();
-          setList(null);
-          return;
+    const { key, code, keyCode, shiftKey, ctrlKey, metaKey, altKey } = e;
+    const action = listKeyAction({ key, code, keyCode, shiftKey, ctrlKey, metaKey, altKey, isComposing: e.nativeEvent.isComposing }, list !== null);
+    if (action) e.preventDefault();
+    switch (action) {
+      case 'open':
+        update(value, caretOf(e.currentTarget), true);
+        return;
+      case 'next':
+      case 'prev': {
+        const n = list!.items.length;
+        setActive((a) => (a + (action === 'next' ? 1 : n - 1)) % n);
+        return;
       }
+      case 'accept':
+        accept(list!.items[active]);
+        return;
+      case 'close':
+        e.stopPropagation();
+        setList(null);
+        return;
     }
     onKeyDown?.(e);
   };
@@ -99,7 +94,16 @@ export function AutocompleteInput({ value, onValueChange, mode, paths, onKeyDown
         value={value}
         onChange={(e) => {
           onValueChange(e.target.value);
-          update(e.target.value, caretOf(e.target), false);
+          // While an IME composes, the text is provisional: wait for compositionend.
+          if (!composing.current) update(e.target.value, caretOf(e.target), false);
+        }}
+        onCompositionStart={() => {
+          composing.current = true;
+          setList(null);
+        }}
+        onCompositionEnd={(e) => {
+          composing.current = false;
+          update(e.currentTarget.value, caretOf(e.currentTarget), false);
         }}
         onKeyDown={keyDown}
         onKeyUp={(e) => {
@@ -112,7 +116,8 @@ export function AutocompleteInput({ value, onValueChange, mode, paths, onKeyDown
         }}
       />
       {/* The box follows the page direction (logical inset); its suggestions are code, so always LTR. */}
-      <div className="ac__pop" hidden={!open}>
+      {/* Keep focus in the input when pressing an option or the list's scrollbar. */}
+      <div className="ac__pop" hidden={!open} onMouseDown={(e) => e.preventDefault()}>
         <ul id={listId} role="listbox" className="ac__list" dir="ltr">
           {list?.items.map((s, n) => (
             <li
@@ -121,7 +126,6 @@ export function AutocompleteInput({ value, onValueChange, mode, paths, onKeyDown
               role="option"
               aria-selected={n === active}
               className={`ac__item${n === active ? ' ac__item--active' : ''}`}
-              onMouseDown={(e) => e.preventDefault()}
               onMouseMove={() => n !== active && setActive(n)}
               onClick={() => accept(s)}
             >
