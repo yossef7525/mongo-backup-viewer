@@ -5,6 +5,7 @@ import { isAborted } from '../worker/client';
 import type { CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
 import { formatBytes, pct } from './format';
+import { ExportDialog } from './ExportDialog';
 import { JsonTree } from './JsonTree';
 import { Pager } from './Pager';
 import { QueryBar } from './QueryBar';
@@ -25,6 +26,7 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
   const [page, setPage] = useState(0);
   const [docs, setDocs] = useState<Doc[]>([]);
   const [view, setView] = useState<'table' | 'json'>('table');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const input = applied;
@@ -85,7 +87,11 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
             {t('collection.docCount', { count: collection.count })} · {t('collection.size', { size: formatBytes(collection.bytes, locale) })}
           </p>
         </div>
-        <div className="collection__actions" data-slot="export" />
+        <div className="collection__actions">
+          <button type="button" className="btn btn--primary" disabled={!ready} onClick={() => setExporting(true)}>
+            {t('export.open')}
+          </button>
+        </div>
       </header>
 
       {collection.indexes.length > 0 && (
@@ -130,6 +136,7 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
       {ready && status.returned === 0 && <p className="placeholder">{t('results.empty')}</p>}
       {ready && docs.length > 0 && (view === 'table' ? <ResultsTable docs={docs} /> : <JsonTree docs={docs} />)}
       {ready && status.returned > PAGE_SIZE && <Pager page={page} pageSize={PAGE_SIZE} total={status.returned} onPage={setPage} />}
+      {exporting && ready && <ExportDialog collection={collection} input={applied} count={status.returned} onClose={() => setExporting(false)} />}
     </section>
   );
 }

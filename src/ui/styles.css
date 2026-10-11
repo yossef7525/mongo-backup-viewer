@@ -165,3 +165,16 @@ code, .mono { font-family: var(--mono); }
 
 .pager { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .pager__range { font-variant-numeric: tabular-nums; }
+
+.dialog { inline-size: min(520px, calc(100vw - 32px)); border: 1px solid var(--border); border-radius: 12px; padding: 20px; background: var(--surface); color: var(--text); }
+.dialog::backdrop { background: rgb(0 0 0 / .45); }
+.dialog h2 { margin: 0 0 12px; font-size: 18px; }
+.dialog > * + * { margin-block-start: 12px; }
+.formats { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; }
+.formats legend { font-size: 12px; color: var(--muted); margin-block-end: 4px; }
+.format { display: flex; gap: 10px; align-items: start; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; }
+.format--active { border-color: var(--accent); background: var(--accent-soft); }
+.format__hint { display: block; }
+.filename { display: flex; align-items: center; gap: 6px; }
+.notice--ok { background: var(--accent-soft); color: var(--accent); }
+.dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
