@@ -1,0 +1,5 @@
+node_modules
+dist
+*.gz
+!public/demo.gz
+.env*
