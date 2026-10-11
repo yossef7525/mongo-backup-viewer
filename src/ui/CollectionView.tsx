@@ -13,7 +13,7 @@ import type { Doc } from './Value';
 
 const PAGE_SIZE = 50;
 
-type Status = { kind: 'running'; percent: number } | { kind: 'ready'; matched: number; returned: number } | { kind: 'error'; message: string };
+type Status = { kind: 'running'; percent: number } | { kind: 'ready'; matched: number; returned: number; input: QueryInput } | { kind: 'error'; message: string };
 
 export function CollectionView({ collection }: { collection: CollectionSummary }) {
   const t = useT();
@@ -27,16 +27,17 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
   const [view, setView] = useState<'table' | 'json'>('table');
 
   useEffect(() => {
+    const input = applied;
     let alive = true;
     setStatus({ kind: 'running', percent: 0 });
     setPage(0);
     setDocs([]);
     const job = backend.call(
-      { type: 'query', key: collection.key, input: applied },
+      { type: 'query', key: collection.key, input },
       { onProgress: (done, total) => alive && setStatus({ kind: 'running', percent: pct(done, total) }) },
     );
     job.promise
-      .then((r) => alive && setStatus({ kind: 'ready', matched: r.matched, returned: r.returned }))
+      .then((r) => alive && setStatus({ kind: 'ready', matched: r.matched, returned: r.returned, input }))
       .catch((e: unknown) => alive && !isAborted(e) && setStatus({ kind: 'error', message: (e as Error).message }));
     return () => {
       alive = false;
@@ -44,18 +45,21 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
     };
   }, [collection.key, applied]);
 
-  const ready = status.kind === 'ready';
+  // Only fetch pages once the query result belongs to the currently applied input;
+  // otherwise a stale 'ready' commit would start a duplicate full scan in the worker.
+  const readyInput = status.kind === 'ready' ? status.input : null;
+  const ready = status.kind === 'ready' && status.input === applied;
   useEffect(() => {
-    if (!ready) return;
+    if (readyInput === null || readyInput !== applied) return;
     let alive = true;
-    backend
-      .call({ type: 'page', key: collection.key, input: applied, offset: page * PAGE_SIZE, size: PAGE_SIZE })
-      .promise.then((r) => alive && setDocs(r.docs))
+    const job = backend.call({ type: 'page', key: collection.key, input: applied, offset: page * PAGE_SIZE, size: PAGE_SIZE });
+    job.promise.then((r) => alive && setDocs(r.docs))
       .catch((e: unknown) => alive && !isAborted(e) && setStatus({ kind: 'error', message: (e as Error).message }));
     return () => {
       alive = false;
+      backend.cancel(job.jobId);
     };
-  }, [ready, page, collection.key, applied]);
+  }, [readyInput, page, collection.key, applied]);
 
   const submit = () => {
     const r = parseQuerySpec(draft);
