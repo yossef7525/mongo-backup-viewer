@@ -59,7 +59,7 @@ code, .mono { font-family: var(--mono); }
 .sr-only { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); }
 
 .app { display: grid; grid-template-rows: auto 1fr; block-size: 100dvh; }
-.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; background: var(--surface); border-block-end: 1px solid var(--border); }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 10px 16px; background: var(--surface); border-block-end: 1px solid var(--border); }
 .brand { display: flex; align-items: center; gap: 10px; min-inline-size: 0; }
 .brand h1 { font-size: 16px; margin: 0; white-space: nowrap; }
 .topbar__end { display: flex; align-items: center; gap: 12px; }
@@ -96,7 +96,13 @@ code, .mono { font-family: var(--mono); }
 .sidebar__head h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0; }
 .archive { padding-block: 8px; border-block-start: 1px solid var(--border); }
 .archive__head { display: flex; align-items: start; justify-content: space-between; gap: 6px; }
-.archive__titles { min-inline-size: 0; }
+.archive__titles { flex: 1; min-inline-size: 0; }
+/*
+ * Names use dir="auto", so a block would align an English name to the left of a Hebrew sidebar.
+ * Shrink-wrapped flex items sit at the container's start edge instead, whatever their own direction.
+ */
+.archive__titles, .dbgroup { display: flex; flex-direction: column; align-items: flex-start; }
+.dbgroup > .colls { align-self: stretch; }
 .archive__db { font-weight: 600; overflow-wrap: anywhere; }
 .archive__file { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .archive__error { margin: 6px 0; padding: 6px 8px; border-radius: 6px; background: var(--error-soft); color: var(--error); font-size: 12px; }
@@ -106,8 +112,8 @@ code, .mono { font-family: var(--mono); }
 .coll { display: flex; align-items: center; gap: 6px; inline-size: 100%; padding: 4px 8px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; text-align: start; }
 .coll:hover { background: var(--surface-2); }
 .coll--active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.coll__name { flex: 1; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.coll__count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.coll__name { min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.coll__count { margin-inline-start: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .progress { block-size: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; margin-block: 6px 2px; }
 .progress__bar { block-size: 100%; background: var(--accent); transition: inline-size .2s; }
 
@@ -116,13 +122,14 @@ code, .mono { font-family: var(--mono); }
 .drop-overlay { position: absolute; inset: 8px; display: grid; place-content: center; border: 2px dashed var(--accent); border-radius: 16px; background: color-mix(in srgb, var(--accent-soft) 85%, transparent); font-size: 18px; font-weight: 600; pointer-events: none; }
 
 @media (max-width: 760px) {
-  .workspace { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
   .sidebar { max-block-size: 40dvh; border-inline-end: 0; border-block-end: 1px solid var(--border); }
   .brand .badge { display: none; }
 }
 
 .collection { display: grid; gap: 12px; }
 .collection__head { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.collection__titles { display: flex; flex-direction: column; align-items: flex-start; min-inline-size: 0; }
 .collection__titles h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
 .collection__titles p { margin: 2px 0 0; }
 .indexes { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -134,8 +141,9 @@ code, .mono { font-family: var(--mono); }
 #root > .boundary { margin: 16px; }
 
 .querybar { display: grid; gap: 8px; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-.querybar__row { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
-.querybar__buttons { display: flex; gap: 6px; }
+.querybar__row { display: flex; flex-wrap: wrap; gap: 8px; align-items: start; }
+/* Line the buttons up with the inputs (below the 12px label), not with an error message under them. */
+.querybar__buttons { display: flex; gap: 6px; margin-block-start: 20px; }
 .qfield { display: grid; gap: 2px; flex: 1 1 260px; min-inline-size: 0; }
 .qfield--narrow { flex: 0 1 100px; }
 .qfield__label { font-size: 12px; color: var(--muted); }
@@ -151,13 +159,15 @@ code, .mono { font-family: var(--mono); }
 .table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); max-block-size: max(320px, calc(100dvh - 400px)); }
 .results { border-collapse: collapse; font-size: 13px; min-inline-size: 100%; }
 .results th, .results td { padding: 6px 10px; border-block-end: 1px solid var(--border); text-align: start; white-space: nowrap; max-inline-size: 320px; overflow: hidden; text-overflow: ellipsis; }
+/* A value keeps its own direction, so a clipped LTR string in an RTL table ends with "…" on its own end side. */
+.results td > .v { display: inline-block; max-inline-size: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: top; }
 .results th { position: sticky; inset-block-start: 0; background: var(--surface-2); font-weight: 600; z-index: 1; }
 .results tbody tr:hover { background: var(--surface-2); }
 .results td.cell--branch { cursor: default; }
 .results td.cell--branch:focus-visible { outline-offset: -2px; }
 
 .vpop { position: fixed; z-index: 20; max-inline-size: min(480px, calc(100vw - 16px)); max-block-size: min(360px, calc(100dvh - 16px)); overflow: auto; padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
-.vpop__body { font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.vpop__body { padding-inline-start: 14px; font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
 
 .v { font-family: var(--mono); font-size: 12.5px; }
 .v--string { color: var(--t-string); font-family: var(--font); font-size: 13px; }
@@ -167,10 +177,11 @@ code, .mono { font-family: var(--mono); }
 .v--array, .v--object { color: var(--muted); }
 
 .jsontree { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.doccard { position: relative; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: var(--mono); font-size: 12.5px; }
+.doccard { position: relative; padding-block: 10px; padding-inline: 26px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); font-family: var(--mono); font-size: 12.5px; }
 .doccard__copy { position: absolute; inset-inline-end: 8px; inset-block-start: 8px; font-family: var(--font); }
 .jt__children { padding-inline-start: 18px; border-inline-start: 1px dashed var(--border); margin-inline-start: 4px; }
 .jt__key { color: var(--t-key); }
+.jt__key bdi:dir(rtl) { font-family: var(--font); }
 .jt__meta { color: var(--muted); }
 .jt__branch > summary { cursor: pointer; list-style-position: outside; }
 

@@ -5,7 +5,7 @@ import type { QueryInput } from '../query/spec';
 import { isAborted } from '../worker/client';
 import type { CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
-import { pct } from './format';
+import { firstStrongDir, isolate, pct } from './format';
 
 declare global {
   interface Window {
@@ -127,7 +127,8 @@ export function ExportDialog({ collection, input, count, onClose }: Props) {
       </fieldset>
       <label className="qfield">
         <span className="qfield__label">{t('export.fileName')}</span>
-        <span className="filename">
+        {/* The extension follows the name's own direction: "orders.json" in any UI, ".json" before an RTL name. */}
+        <span className="filename" dir={firstStrongDir(name)}>
           <input className="qfield__input" dir="auto" value={name} disabled={running} onChange={(e) => setName(e.target.value)} />
           <code dir="ltr">{extension}</code>
         </span>
@@ -145,7 +146,7 @@ export function ExportDialog({ collection, input, count, onClose }: Props) {
       {phase.kind === 'done' && <p className="notice notice--ok">{t('export.done', { count: phase.count })}</p>}
       {phase.kind === 'error' && (
         <p className="notice notice--error" role="alert">
-          {t('export.failed', { message: phase.message })}
+          {t('export.failed', { message: isolate(phase.message) })}
         </p>
       )}
 

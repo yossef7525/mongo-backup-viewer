@@ -17,8 +17,8 @@ export function ResultsTable({ docs }: { docs: Doc[] }) {
         <thead>
           <tr>
             {columns.map((c) => (
-              <th key={c} scope="col" dir="auto">
-                {c}
+              <th key={c} scope="col">
+                <bdi>{c}</bdi>
               </th>
             ))}
           </tr>
@@ -30,8 +30,8 @@ export function ResultsTable({ docs }: { docs: Doc[] }) {
                 if (!Object.hasOwn(d, c)) return <td key={c} />;
                 const v = d[c];
                 const view = describeValue(v);
-                // Arrays and objects open a JSON tree popover; scalars keep the native tooltip for long text.
-                return isBranch(view) ? (
+                // Non-empty arrays and objects open a JSON tree popover; scalars keep the native tooltip for long text.
+                return isBranch(view) && Object.keys(v as object).length > 0 ? (
                   <PopoverCell key={c} value={v}>
                     <Value v={v} />
                   </PopoverCell>

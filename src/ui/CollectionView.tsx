@@ -4,7 +4,7 @@ import { EMPTY_INPUT, parseQuerySpec, type QueryError, type QueryField, type Que
 import { isAborted } from '../worker/client';
 import type { CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
-import { formatBytes, pct } from './format';
+import { formatBytes, isolate, pct } from './format';
 import { ErrorBoundary } from './ErrorBoundary';
 import { ExportDialog } from './ExportDialog';
 import { JsonTree } from './JsonTree';
@@ -85,7 +85,7 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
             {collection.name}
           </h2>
           <p className="muted small">
-            {t('collection.docCount', { count: collection.count })} · {t('collection.size', { size: formatBytes(collection.bytes, locale) })}
+            {t('collection.docCount', { count: collection.count })} · {t('collection.size', { size: isolate(formatBytes(collection.bytes, locale)) })}
           </p>
         </div>
         <div className="collection__actions">
@@ -131,7 +131,7 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
       )}
       {status.kind === 'error' && (
         <p className="notice notice--error" role="alert">
-          {t('error.generic', { message: status.message })}
+          {t('error.generic', { message: isolate(status.message) })}
         </p>
       )}
       {ready && status.returned === 0 && <p className="placeholder">{t('results.empty')}</p>}

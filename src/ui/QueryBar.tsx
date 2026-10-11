@@ -2,13 +2,14 @@ import { useState } from 'react';
 import type { MessageKey } from '../i18n/i18n';
 import { useT } from '../i18n/react';
 import type { QueryError, QueryField, QueryInput } from '../query/spec';
+import { isolate } from './format';
 
 type T = ReturnType<typeof useT>;
 
 export function queryErrorText(t: T, e: QueryError): string {
   switch (e.code) {
     case 'invalidJson':
-      return t('query.invalidJson', { detail: e.detail });
+      return t('query.invalidJson', { detail: isolate(e.detail) });
     case 'notObject':
       return t('query.notObject');
     case 'invalidNumber':

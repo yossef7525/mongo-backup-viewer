@@ -6,9 +6,11 @@ import { Value, type Doc } from './Value';
 /** One key/value of the tree; branches are collapsible and start open for the first two levels. */
 export function JsonNode({ name, value, depth }: { name?: string; value: unknown; depth: number }) {
   const view = describeValue(value);
+  // The key is isolated and the colon stays outside it, so an RTL key reads "שם: …" and not ":שם…".
   const label = name !== undefined && (
-    <span className="jt__key" dir="auto">
-      {name}:{' '}
+    <span className="jt__key">
+      <bdi>{name}</bdi>
+      {': '}
     </span>
   );
   if (!isBranch(view)) {

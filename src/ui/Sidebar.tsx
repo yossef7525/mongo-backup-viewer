@@ -1,6 +1,7 @@
 import { useLocale, useT } from '../i18n/react';
 import type { ArchiveSummary, CollectionSummary, SummaryError } from '../worker/protocol';
 import { FileDrop } from './FileDrop';
+import { fileNameText, isolate } from './format';
 
 export interface LoadingFile {
   archiveId: number;
@@ -23,7 +24,7 @@ export function archiveErrorText(t: T, e: SummaryError): string {
     case 'corrupt':
       return t('error.corrupt', { offset: e.offset ?? 0 });
     default:
-      return t('error.generic', { message: e.message });
+      return t('error.generic', { message: isolate(e.message) });
   }
 }
 
@@ -61,7 +62,7 @@ export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, on
       {loading.map((l) => (
         <div key={l.archiveId} className="archive">
           <div className="archive__head">
-            <div className="archive__file" dir="auto">{l.fileName}</div>
+            <div className="archive__file" dir="auto">{fileNameText(l.fileName)}</div>
             <button type="button" className="icon-btn" onClick={() => onCancelLoading(l)} aria-label={t('common.cancel')} title={t('common.cancel')}>
               ×
             </button>
@@ -92,12 +93,12 @@ export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, on
           <section key={a.archiveId} className="archive">
             <header className="archive__head">
               <div className="archive__titles">
-                {multiDb ? (
-                  <div className="archive__db" dir="auto">{a.fileName}</div>
+                {multiDb || a.db === null ? (
+                  <div className="archive__db" dir="auto">{fileNameText(a.fileName)}</div>
                 ) : (
                   <>
-                    <div className="archive__db" dir="auto">{a.db ?? a.fileName}</div>
-                    <div className="archive__file" dir="auto">{a.fileName}</div>
+                    <div className="archive__db" dir="auto">{a.db}</div>
+                    <div className="archive__file" dir="auto">{fileNameText(a.fileName)}</div>
                   </>
                 )}
               </div>

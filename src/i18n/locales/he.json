@@ -3,7 +3,7 @@
   "app.tagline": "עיון, סינון וייצוא של גיבויי MongoDB — הכול בתוך הדפדפן.",
   "app.privacy": "הקבצים לא יוצאים מהמכשיר שלך",
   "app.sourceCode": "קוד מקור",
-  "drop.title": "גררו לכאן ארכיוני mongodump ⁦.gz⁩ או תיקייה שלמה",
+  "drop.title": "גררו לכאן ארכיוני ⁦mongodump .gz⁩ או תיקייה שלמה",
   "drop.or": "או",
   "drop.chooseFiles": "בחירת קבצים",
   "drop.chooseFolder": "בחירת תיקייה",
