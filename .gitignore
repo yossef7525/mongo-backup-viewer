@@ -3,3 +3,4 @@ dist
 *.gz
 !public/demo.gz
 .env*
+docs/superpowers/
