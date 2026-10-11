@@ -10,7 +10,7 @@ No archive handy? Click **Try with demo data**, or open `?demo=orders`. Add `?la
 
 ## Privacy
 
-Files are processed locally in a Web Worker. Nothing is uploaded, there is no analytics and there are no third-party requests. It works offline once loaded.
+Files are processed locally in a Web Worker. Nothing is uploaded, there is no analytics and there are no third-party requests. It needs no network after the page loads.
 
 ## Features
 
@@ -32,6 +32,13 @@ mongodump --archive=backup.gz --gzip
 
 Not supported yet: the directory format (`*.bson.gz`).
 
+## Known limitations
+
+- No `$type` matching on BSON types.
+- Integers beyond 2^53 and long decimals are compared approximately in filters (display and export keep the exact values).
+- Directory-format dumps (`mongodump --out`) are not supported.
+- Aggregation pipelines are not supported, only `find`.
+
 ## Query examples
 
 | Goal | Filter |
@@ -50,6 +57,8 @@ Replace `…` with a real 24-character hex id.
 Chrome and Edge work best (streaming save). Firefox and Safari export through an in-memory download. Memory use is roughly the uncompressed size of the open archives.
 
 ## Development
+
+Requirements: Node 22+ for development.
 
 ```bash
 npm ci
