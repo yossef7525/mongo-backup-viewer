@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocale, useT } from '../i18n/react';
 import { EMPTY_INPUT, parseQuerySpec, type QueryError, type QueryField, type QueryInput } from '../query/spec';
 import { isAborted } from '../worker/client';
+import type { FieldPath } from '../worker/fields';
 import type { CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
 import { formatBytes, isolate, pct } from './format';
@@ -28,6 +29,19 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
   const [docs, setDocs] = useState<Doc[]>([]);
   const [view, setView] = useState<'table' | 'json'>('table');
   const [exporting, setExporting] = useState(false);
+  const [fields, setFields] = useState<FieldPath[]>([]);
+
+  // Field paths for autocomplete; a failure just leaves the suggestions without fields.
+  useEffect(() => {
+    let alive = true;
+    setFields([]);
+    const job = backend.call({ type: 'fields', key: collection.key });
+    job.promise.then((r) => alive && setFields(r.paths)).catch(() => {});
+    return () => {
+      alive = false;
+      backend.cancel(job.jobId);
+    };
+  }, [collection.key]);
 
   useEffect(() => {
     const input = applied;
@@ -107,7 +121,7 @@ export function CollectionView({ collection }: { collection: CollectionSummary }
       )}
       {!collection.complete && <p className="notice notice--warn">{t('collection.partialNote')}</p>}
 
-      <QueryBar value={draft} errors={errors} onChange={setDraft} onSubmit={submit} onReset={reset} />
+      <QueryBar value={draft} errors={errors} fields={fields} onChange={setDraft} onSubmit={submit} onReset={reset} />
 
       <div className="results-head">
         <span aria-live="polite">

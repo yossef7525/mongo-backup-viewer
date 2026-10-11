@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { MessageKey } from '../i18n/i18n';
 import { useT } from '../i18n/react';
 import type { QueryError, QueryField, QueryInput } from '../query/spec';
+import type { FieldPath } from '../worker/fields';
+import { AutocompleteInput } from './Autocomplete';
 import { isolate } from './format';
 
 type T = ReturnType<typeof useT>;
@@ -22,39 +24,49 @@ export function queryErrorText(t: T, e: QueryError): string {
 interface Props {
   value: QueryInput;
   errors: Partial<Record<QueryField, QueryError>>;
+  /** Sampled field paths of the collection, for autocomplete. */
+  fields: FieldPath[];
   onChange(v: QueryInput): void;
   onSubmit(): void;
   onReset(): void;
 }
 
-export function QueryBar({ value, errors, onChange, onSubmit, onReset }: Props) {
+export function QueryBar({ value, errors, fields, onChange, onSubmit, onReset }: Props) {
   const t = useT();
+  const idBase = useId();
   const [open, setOpen] = useState(false);
   const showOptions = open || !!(errors.projection || errors.sort || errors.skip || errors.limit);
 
   const field = (name: QueryField, label: MessageKey, placeholder: string, narrow = false) => {
     const error = errors[name];
+    const id = `${idBase}-${name}`;
+    const common = {
+      id,
+      className: `qfield__input${error ? ' qfield__input--error' : ''}`,
+      dir: 'ltr',
+      spellCheck: false,
+      autoComplete: 'off',
+      placeholder,
+      'aria-invalid': !!error,
+      'aria-describedby': error ? `qerr-${name}` : undefined,
+    } as const;
+    const set = (v: string) => onChange({ ...value, [name]: v });
     return (
-      <label className={`qfield${narrow ? ' qfield--narrow' : ''}`}>
-        <span className="qfield__label">{t(label)}</span>
-        <input
-          className={`qfield__input${error ? ' qfield__input--error' : ''}`}
-          dir="ltr"
-          spellCheck={false}
-          autoComplete="off"
-          inputMode={narrow ? 'numeric' : undefined}
-          value={value[name]}
-          placeholder={placeholder}
-          aria-invalid={!!error}
-          aria-describedby={error ? `qerr-${name}` : undefined}
-          onChange={(e) => onChange({ ...value, [name]: e.target.value })}
-        />
+      <div className={`qfield${narrow ? ' qfield--narrow' : ''}`}>
+        <label className="qfield__label" htmlFor={id}>
+          {t(label)}
+        </label>
+        {name === 'filter' || name === 'projection' || name === 'sort' ? (
+          <AutocompleteInput {...common} value={value[name]} onValueChange={set} mode={name} paths={fields} />
+        ) : (
+          <input {...common} inputMode="numeric" value={value[name]} onChange={(e) => set(e.target.value)} />
+        )}
         {error && (
           <span id={`qerr-${name}`} className="qfield__error">
             {queryErrorText(t, error)}
           </span>
         )}
-      </label>
+      </div>
     );
   };
 

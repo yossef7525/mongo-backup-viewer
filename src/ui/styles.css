@@ -150,6 +150,15 @@ code, .mono { font-family: var(--mono); }
 .qfield__input { inline-size: 100%; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); font-family: var(--mono); font-size: 13px; text-align: start; }
 .qfield__input--error { border-color: var(--error); }
 .qfield__error { font-size: 12px; color: var(--error); }
+.ac { position: relative; min-inline-size: 0; }
+.ac__pop { position: absolute; z-index: 15; inset-block-start: calc(100% + 2px); inset-inline-start: 0; inline-size: max-content; min-inline-size: min(260px, 100%); max-inline-size: 100%; }
+.ac__pop[hidden] { display: none; }
+/* 8 rows of 28px are visible; the rest scroll. */
+.ac__list { list-style: none; margin: 0; padding: 4px 0; max-block-size: calc(8 * 28px + 8px); overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 8px 24px rgb(0 0 0 / .18); }
+.ac__item { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; block-size: 28px; padding: 4px 10px; line-height: 20px; cursor: pointer; white-space: nowrap; }
+.ac__item--active { background: var(--accent-soft); }
+.ac__label { font-family: var(--mono); font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
+.ac__detail { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
 
 .results-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .segmented { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
