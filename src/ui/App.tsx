@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n/react';
+import { isAborted } from '../worker/client';
 import type { ArchiveSummary, CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
 import { CollectionView } from './CollectionView';
@@ -22,18 +23,24 @@ export function App() {
   const addFiles = useCallback((files: File[]) => {
     for (const file of files) {
       const archiveId = nextId.current++;
-      setLoading((l) => [...l, { archiveId, fileName: file.name, percent: 0 }]);
-      backend
-        .call(
-          { type: 'open', archiveId, file },
-          { onProgress: (done, total) => setLoading((l) => l.map((x) => (x.archiveId === archiveId ? { ...x, percent: pct(done, total) } : x))) },
-        )
-        .promise.then((r) => setArchives((a) => [...a, r.archive].sort((x, y) => x.fileName.localeCompare(y.fileName))))
-        .catch((e: Error) =>
-          setArchives((a) => [...a, { archiveId, fileName: file.name, db: null, serverVersion: null, collections: [], error: { code: 'generic', message: e.message } }]),
-        )
+      const job = backend.call(
+        { type: 'open', archiveId, file },
+        { onProgress: (done, total) => setLoading((l) => l.map((x) => (x.archiveId === archiveId ? { ...x, percent: pct(done, total) } : x))) },
+      );
+      setLoading((l) => [...l, { archiveId, jobId: job.jobId, fileName: file.name, percent: 0 }]);
+      job.promise
+        .then((r) => setArchives((a) => [...a, r.archive].sort((x, y) => x.fileName.localeCompare(y.fileName))))
+        .catch((e: Error) => {
+          if (isAborted(e)) return; // cancelled from the sidebar
+          setArchives((a) => [...a, { archiveId, fileName: file.name, db: null, serverVersion: null, collections: [], error: { code: 'generic', message: e.message } }]);
+        })
         .finally(() => setLoading((l) => l.filter((x) => x.archiveId !== archiveId)));
     }
+  }, []);
+
+  const cancelLoading = useCallback((l: LoadingFile) => {
+    backend.cancel(l.jobId);
+    setLoading((all) => all.filter((x) => x.archiveId !== l.archiveId));
   }, []);
 
   const removeArchive = useCallback((archiveId: number) => {
@@ -140,7 +147,7 @@ export function App() {
         </main>
       ) : (
         <div className="workspace">
-          <Sidebar archives={archives} loading={loading} selectedKey={selected?.key ?? null} onSelect={setSelected} onRemove={removeArchive} onAddFiles={addFiles} />
+          <Sidebar archives={archives} loading={loading} selectedKey={selected?.key ?? null} onSelect={setSelected} onRemove={removeArchive} onCancelLoading={cancelLoading} onAddFiles={addFiles} />
           <main className="main">
             {selected ? <CollectionView key={selected.key} collection={selected} /> : <p className="placeholder">{t('results.selectCollection')}</p>}
           </main>

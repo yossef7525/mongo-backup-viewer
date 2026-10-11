@@ -4,6 +4,8 @@ import { FileDrop } from './FileDrop';
 
 export interface LoadingFile {
   archiveId: number;
+  /** The worker job opening this file, so the user can cancel it. */
+  jobId: number;
   fileName: string;
   percent: number;
 }
@@ -42,10 +44,11 @@ interface Props {
   selectedKey: string | null;
   onSelect(c: CollectionSummary): void;
   onRemove(archiveId: number): void;
+  onCancelLoading(l: LoadingFile): void;
   onAddFiles(files: File[]): void;
 }
 
-export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, onAddFiles }: Props) {
+export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, onCancelLoading, onAddFiles }: Props) {
   const t = useT();
   const { locale } = useLocale();
   const nf = new Intl.NumberFormat(locale);
@@ -57,7 +60,12 @@ export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, on
       </div>
       {loading.map((l) => (
         <div key={l.archiveId} className="archive">
-          <div className="archive__file" dir="auto">{l.fileName}</div>
+          <div className="archive__head">
+            <div className="archive__file" dir="auto">{l.fileName}</div>
+            <button type="button" className="icon-btn" onClick={() => onCancelLoading(l)} aria-label={t('common.cancel')} title={t('common.cancel')}>
+              ×
+            </button>
+          </div>
           <div className="progress" role="progressbar" aria-valuenow={l.percent} aria-valuemin={0} aria-valuemax={100}>
             <div className="progress__bar" style={{ inlineSize: `${l.percent}%` }} />
           </div>
