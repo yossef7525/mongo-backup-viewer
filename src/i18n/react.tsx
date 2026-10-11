@@ -11,6 +11,9 @@ const I18nContext = createContext<I18nState>({ locale: 'en', setLocale: () => {}
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<LocaleCode>(() => detectLocale(navigator.languages ?? [navigator.language], new URLSearchParams(location.search).get('lang') ?? readStoredLocale()));
   useEffect(() => applyDocumentLocale(locale), [locale]);
+  useEffect(() => {
+    document.title = translate(locale, 'app.docTitle');
+  }, [locale]);
   const value = useMemo<I18nState>(
     () => ({
       locale,
