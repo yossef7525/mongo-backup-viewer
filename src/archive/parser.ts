@@ -162,3 +162,31 @@ export async function parseArchive(stream: ReadableStream<Uint8Array>, sink: Arc
     throw new ArchiveFormatError('truncated', 'Archive ended unexpectedly', q.consumed);
   }
 }
+
+/**
+ * Streams back-to-back BSON documents (a mongodump `--out` `.bson` file, already decompressed) to `onDoc`.
+ * `bson` may be a view into a stream chunk; copy it if you keep it. Throws ArchiveFormatError on a bad size or a partial last document.
+ */
+export async function readBsonDocs(stream: ReadableStream<Uint8Array>, onDoc: (bson: Uint8Array) => void, signal?: AbortSignal): Promise<void> {
+  const q = new ByteQueue();
+  const reader = stream.getReader();
+  try {
+    for (;;) {
+      signal?.throwIfAborted();
+      const { done, value } = await reader.read();
+      if (done) break;
+      q.push(value);
+      while (q.length >= 4) {
+        const size = q.peekInt32();
+        if (size < 5 || size > MAX_DOC_SIZE) throw new ArchiveFormatError('corrupt', `Invalid BSON document size ${size}`, q.consumed);
+        if (q.length < size) break;
+        onDoc(q.take(size));
+      }
+    }
+  } catch (e) {
+    await reader.cancel().catch(() => {});
+    throw e;
+  }
+  signal?.throwIfAborted();
+  if (q.length > 0) throw new ArchiveFormatError('truncated', 'File ended in the middle of a document', q.consumed);
+}

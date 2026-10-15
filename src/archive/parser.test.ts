@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { deserialize, ObjectId, serialize, type Document } from 'bson';
-import { ArchiveFormatError, parseArchive, type ArchiveSink, type CollectionMeta } from './parser';
+import { ArchiveFormatError, parseArchive, readBsonDocs, type ArchiveSink, type CollectionMeta } from './parser';
+import { encodeBsonFile } from './testing/encodeDump';
 import { encodeArchive, streamOf, type FixtureCollection } from './testing/encodeArchive';
 
 function collector() {
@@ -147,5 +148,31 @@ describe('parseArchive', () => {
     await parseArchive(streamOf(bytes), c.sink);
     expect(c.metas).toEqual([{ db: 'd', collection: 'c', type: 'collection', indexes: [], options: {} }]);
     expect(c.eofs).toEqual(['d.c']);
+  });
+});
+
+describe('readBsonDocs', () => {
+  const docs = Array.from({ length: 300 }, (_, i) => ({ _id: i, s: 'x'.repeat(i % 37) }));
+  const bytes = encodeBsonFile(docs);
+
+  it('reads concatenated documents independent of chunk boundaries', async () => {
+    for (const size of [1, 3, 64, () => 1 + Math.floor(Math.random() * 200)]) {
+      const got: Document[] = [];
+      await readBsonDocs(streamOf(bytes, size), (b) => got.push(deserialize(b.slice())));
+      expect(got).toEqual(docs);
+    }
+  });
+
+  it('reports a trailing partial document as truncated', async () => {
+    let n = 0;
+    const err = await readBsonDocs(streamOf(bytes.subarray(0, bytes.length - 2), 7), () => n++).catch((e) => e);
+    expect(err).toBeInstanceOf(ArchiveFormatError);
+    expect(err).toMatchObject({ code: 'truncated' });
+    expect(n).toBe(docs.length - 1);
+  });
+
+  it('flags an impossible document size as corrupt', async () => {
+    const err = await readBsonDocs(streamOf(new Uint8Array([0xff, 0xff, 0xff, 0x7f, 0])), () => {}).catch((e) => e);
+    expect(err).toMatchObject({ code: 'corrupt', offset: 0 });
   });
 });

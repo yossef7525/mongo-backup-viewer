@@ -34,9 +34,9 @@ export interface OpenedArchive {
   error: OpenError | null;
 }
 
-const isAbort = (e: unknown) => e instanceof Error && e.name === 'AbortError';
+export const isAbort = (e: unknown) => e instanceof Error && e.name === 'AbortError';
 
-async function isGzip(file: Blob): Promise<boolean> {
+export async function isGzip(file: Blob): Promise<boolean> {
   const head = new Uint8Array(await file.slice(0, 2).arrayBuffer());
   return head[0] === 0x1f && head[1] === 0x8b;
 }
