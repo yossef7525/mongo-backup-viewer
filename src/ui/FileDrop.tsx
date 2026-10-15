@@ -1,9 +1,10 @@
 import { useRef, type ChangeEvent, type ReactNode } from 'react';
 import { useT } from '../i18n/react';
-import { onlyGz, sortFiles } from './files';
+import type { PathEntry } from '../archive/dirDump';
+import { entriesFromPicker } from './files';
 
 interface Props {
-  onFiles(files: File[]): void;
+  onFiles(entries: PathEntry[]): void;
   variant: 'hero' | 'button';
   dragging?: boolean;
   children?: ReactNode;
@@ -15,16 +16,15 @@ export function FileDrop({ onFiles, variant, dragging = false, children }: Props
   const t = useT();
   const filesInput = useRef<HTMLInputElement>(null);
   const folderInput = useRef<HTMLInputElement>(null);
-  // Picked files all go through (the worker explains what is wrong with a non-archive); a picked folder keeps only its .gz files.
+  // Picked files all go through (the worker explains what is wrong with a non-archive); a picked folder keeps archives and dump parts.
   const pick = (e: ChangeEvent<HTMLInputElement>, folder: boolean) => {
-    const files = [...(e.target.files ?? [])];
-    const list = folder ? onlyGz(files) : sortFiles(files);
+    const list = entriesFromPicker([...(e.target.files ?? [])], folder);
     e.target.value = '';
     if (list.length) onFiles(list);
   };
   const inputs = (
     <>
-      <input ref={filesInput} type="file" multiple accept=".gz" hidden onChange={(e) => pick(e, false)} />
+      <input ref={filesInput} type="file" multiple accept=".gz,.bson,.json" hidden onChange={(e) => pick(e, false)} />
       <input ref={folderInput} type="file" hidden onChange={(e) => pick(e, true)} {...folderAttrs} />
     </>
   );

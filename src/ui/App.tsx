@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../i18n/react';
+import { groupInputs, type PathEntry } from '../archive/dirDump';
 import { isAborted } from '../worker/client';
 import type { ArchiveSummary, CollectionSummary } from '../worker/protocol';
 import { backend } from './backend';
@@ -28,23 +29,34 @@ export function App() {
   const [dragging, setDragging] = useState(false);
   const nextId = useRef(1);
 
-  const addFiles = useCallback((files: File[]) => {
-    for (const file of files) {
-      const archiveId = nextId.current++;
-      const job = backend.call(
-        { type: 'open', archiveId, file },
-        { onProgress: (done, total) => setLoading((l) => l.map((x) => (x.archiveId === archiveId ? { ...x, percent: pct(done, total) } : x))) },
-      );
-      setLoading((l) => [...l, { archiveId, jobId: job.jobId, fileName: file.name, percent: 0 }]);
-      job.promise
-        .then((r) => setArchives((a) => [...a, r.archive].sort((x, y) => x.fileName.localeCompare(y.fileName))))
-        .catch((e: Error) => {
-          if (isAborted(e)) return; // cancelled from the sidebar
-          setArchives((a) => [...a, { archiveId, fileName: file.name, db: null, serverVersion: null, collections: [], error: { code: 'generic', message: e.message } }]);
-        })
-        .finally(() => setLoading((l) => l.filter((x) => x.archiveId !== archiveId)));
-    }
+  /** Starts opening one archive or dump: a loading row while it runs, then a sidebar entry (or an error entry). */
+  const startOpen = useCallback((fileName: string, open: (archiveId: number) => { jobId: number; promise: Promise<{ archive: ArchiveSummary }> }) => {
+    const archiveId = nextId.current++;
+    const job = open(archiveId);
+    setLoading((l) => [...l, { archiveId, jobId: job.jobId, fileName, percent: 0 }]);
+    job.promise
+      .then((r) => setArchives((a) => [...a, r.archive].sort((x, y) => x.fileName.localeCompare(y.fileName))))
+      .catch((e: Error) => {
+        if (isAborted(e)) return; // cancelled from the sidebar
+        setArchives((a) => [...a, { archiveId, fileName, db: null, serverVersion: null, collections: [], error: { code: 'generic', message: e.message } }]);
+      })
+      .finally(() => setLoading((l) => l.filter((x) => x.archiveId !== archiveId)));
   }, []);
+
+  const addFiles = useCallback(
+    (entries: PathEntry[]) => {
+      const progress = (archiveId: number) => ({
+        onProgress: (done: number, total: number) => setLoading((l) => l.map((x) => (x.archiveId === archiveId ? { ...x, percent: pct(done, total) } : x))),
+      });
+      const { archives: files, dumps } = groupInputs(entries);
+      for (const file of files) startOpen(file.name, (archiveId) => backend.call({ type: 'open', archiveId, file }, progress(archiveId)));
+      for (const d of dumps) {
+        const dump = { name: d.name, collections: d.collections.map((c) => ({ ...c, metadata: c.metadata ?? null })) };
+        startOpen(d.name, (archiveId) => backend.call({ type: 'openDump', archiveId, dump }, progress(archiveId)));
+      }
+    },
+    [startOpen],
+  );
 
   const cancelLoading = useCallback((l: LoadingFile) => {
     backend.cancel(l.jobId);
@@ -75,7 +87,7 @@ export function App() {
         if (typeof CompressionStream === 'undefined') throw new Error('This browser cannot prepare the demo (CompressionStream missing)');
         blob = await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
       }
-      addFiles([new File([blob], 'demo-shop.gz')]);
+      addFiles([{ file: new File([blob], 'demo-shop.gz'), path: 'demo-shop.gz' }]);
     } catch (e) {
       const archiveId = nextId.current++;
       const message = e instanceof Error ? e.message : String(e);

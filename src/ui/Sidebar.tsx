@@ -1,5 +1,6 @@
 import { useLocale, useT } from '../i18n/react';
 import type { ArchiveSummary, CollectionSummary, SummaryError } from '../worker/protocol';
+import type { PathEntry } from '../archive/dirDump';
 import { FileDrop } from './FileDrop';
 import { fileNameText, isolate } from './format';
 
@@ -46,7 +47,7 @@ interface Props {
   onSelect(c: CollectionSummary): void;
   onRemove(archiveId: number): void;
   onCancelLoading(l: LoadingFile): void;
-  onAddFiles(files: File[]): void;
+  onAddFiles(entries: PathEntry[]): void;
 }
 
 export function Sidebar({ archives, loading, selectedKey, onSelect, onRemove, onCancelLoading, onAddFiles }: Props) {
