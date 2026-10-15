@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { groupInputs, type DirDump } from './dirDump';
+import { groupInputs, isDumpInput, type DirDump } from './dirDump';
 
 const e = (path: string) => ({ file: new File([], path.split('/').pop()!), path });
 const shape = (dumps: DirDump[]) =>
@@ -92,6 +92,14 @@ describe('groupInputs', () => {
       ['dump1', 1],
       ['dump2', 1],
     ]);
+  });
+
+  it('ignores the prelude.json mongodump writes next to the data', () => {
+    const { archives, dumps } = groupInputs([e('out/shop/prelude.json.gz'), e('out/shop/a.bson.gz'), e('prelude.json')]);
+    expect(archives).toEqual([]);
+    expect(shape(dumps)).toEqual([{ name: 'out', collections: [['shop', 'a', 'a.bson.gz', null]] }]);
+    expect(isDumpInput('prelude.json.gz')).toBe(false);
+    expect(isDumpInput('a.metadata.json.gz')).toBe(true);
   });
 
   it('keeps nested dumps of one dropped folder apart', () => {

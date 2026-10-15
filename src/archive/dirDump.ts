@@ -24,9 +24,11 @@ export const LOOSE_DUMP = 'files';
 
 const BSON = /\.bson(\.gz)?$/i;
 const METADATA = /\.metadata\.json(\.gz)?$/i;
+/** Server/tool versions that mongodump --out writes next to the data; not needed to browse. */
+const PRELUDE = /^prelude\.json(\.gz)?$/i;
 
 /** True for the files a folder walk keeps: archives (.gz) and directory-dump parts. */
-export const isDumpInput = (name: string) => /\.gz$/i.test(name) || BSON.test(name) || METADATA.test(name);
+export const isDumpInput = (name: string) => !PRELUDE.test(name) && (/\.gz$/i.test(name) || BSON.test(name) || METADATA.test(name));
 
 /** mongodump percent-escapes characters that are unsafe in file names. */
 function unescape(name: string): string {
@@ -63,6 +65,7 @@ export function groupInputs(entries: PathEntry[]): { archives: File[]; dumps: Di
   for (const { file, path } of entries) {
     const parts = path.split('/').filter(Boolean);
     const base = parts.pop() ?? file.name;
+    if (PRELUDE.test(base)) continue;
     const isBson = BSON.test(base);
     const isMeta = !isBson && METADATA.test(base);
     if (!isBson && !isMeta) {
