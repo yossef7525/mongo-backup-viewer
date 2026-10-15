@@ -10,7 +10,7 @@
   "drop.or": "או",
   "drop.chooseFiles": "בחירת קבצים",
   "drop.chooseFolder": "בחירת תיקייה",
-  "drop.hint": "נתמכים ארכיונים שנוצרו עם mongodump --archive=backup.gz --gzip",
+  "drop.hint": "נתמכים ארכיונים שנוצרו עם ⁦mongodump --archive=backup.gz --gzip⁩, או תיקיית dump (⁦mongodump --out=dump⁩, עם או בלי ⁦--gzip⁩)",
   "drop.tryDemo": "ניסיון עם נתוני דמו",
   "sidebar.databases": "מסדי נתונים",
   "sidebar.addFiles": "הוספת קבצים",

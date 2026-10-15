@@ -10,7 +10,7 @@
   "drop.or": "o",
   "drop.chooseFiles": "Elegir archivos",
   "drop.chooseFolder": "Elegir carpeta",
-  "drop.hint": "Compatible: archivos creados con mongodump --archive=backup.gz --gzip",
+  "drop.hint": "Compatible: archivos creados con mongodump --archive=backup.gz --gzip, o una carpeta de volcado (mongodump --out=dump, con o sin --gzip)",
   "drop.tryDemo": "Probar con datos de demostración",
   "sidebar.databases": "Bases de datos",
   "sidebar.addFiles": "Añadir archivos",

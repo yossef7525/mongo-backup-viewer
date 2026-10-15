@@ -36,13 +36,20 @@ Archives created with `mongodump` (100.x archive format) and gzip:
 mongodump --archive=backup.gz --gzip
 ```
 
-Not supported yet: the directory format (`*.bson.gz`).
+Dump folders (the directory format), with or without `--gzip`:
+
+```bash
+mongodump --out=dump            # dump/<db>/<collection>.bson + .metadata.json
+mongodump --out=dump --gzip     # dump/<db>/<collection>.bson.gz + .metadata.json.gz
+```
+
+Choose (or drop) the `dump` folder, a single database folder inside it, or individual `.bson` / `.bson.gz` files. Collections are grouped by their database folder and indexes are read from the `.metadata.json` files.
 
 ## Known limitations
 
 - No `$type` matching on BSON types.
 - Integers beyond 2^53 and long decimals are compared approximately in filters (display and export keep the exact values).
-- Directory-format dumps (`mongodump --out`) are not supported.
+- In dump folders, the `--oplog` file (`oplog.bson`) is ignored, and views (which have metadata but no data) are not listed.
 - Aggregation pipelines are not supported, only `find`.
 
 ## Query examples

@@ -10,7 +10,7 @@
   "drop.or": "或",
   "drop.chooseFiles": "选择文件",
   "drop.chooseFolder": "选择文件夹",
-  "drop.hint": "支持使用 mongodump --archive=backup.gz --gzip 创建的归档",
+  "drop.hint": "支持使用 mongodump --archive=backup.gz --gzip 创建的归档，或转储文件夹（mongodump --out=dump，可带或不带 --gzip）",
   "drop.tryDemo": "使用演示数据试试",
   "sidebar.databases": "数据库",
   "sidebar.addFiles": "添加文件",

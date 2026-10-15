@@ -10,7 +10,7 @@
   "drop.or": "أو",
   "drop.chooseFiles": "اختيار ملفات",
   "drop.chooseFolder": "اختيار مجلد",
-  "drop.hint": "المدعوم: أرشيفات أُنشئت باستخدام mongodump --archive=backup.gz --gzip",
+  "drop.hint": "المدعوم: أرشيفات أُنشئت باستخدام ⁦mongodump --archive=backup.gz --gzip⁩، أو مجلد dump (⁦mongodump --out=dump⁩، مع ⁦--gzip⁩ أو بدونه)",
   "drop.tryDemo": "جرّب بيانات تجريبية",
   "sidebar.databases": "قواعد البيانات",
   "sidebar.addFiles": "إضافة ملفات",

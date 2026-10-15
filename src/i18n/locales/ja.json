@@ -10,7 +10,7 @@
   "drop.or": "または",
   "drop.chooseFiles": "ファイルを選択",
   "drop.chooseFolder": "フォルダを選択",
-  "drop.hint": "対応形式: mongodump --archive=backup.gz --gzip で作成したアーカイブ",
+  "drop.hint": "対応形式: mongodump --archive=backup.gz --gzip で作成したアーカイブ、またはダンプフォルダ（mongodump --out=dump、--gzip の有無は問いません）",
   "drop.tryDemo": "デモデータで試す",
   "sidebar.databases": "データベース",
   "sidebar.addFiles": "ファイルを追加",
