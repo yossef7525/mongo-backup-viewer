@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { gzipSync } from 'node:zlib';
 import { Decimal128, ObjectId } from 'bson';
 import { encodeArchive } from '../archive/testing/encodeArchive';
+import { encodeBsonFile, encodeMetadataFile } from '../archive/testing/encodeDump';
 import { EMPTY_INPUT } from '../query/spec';
 import { createBackend } from './backend';
 import { BackendClient, isAborted, type WorkerLike } from './client';
@@ -81,5 +82,37 @@ describe('backend', () => {
     await client.call({ type: 'open', archiveId: 3, file }).promise;
     await client.call({ type: 'close', archiveId: 3 }).promise;
     await expect(client.call({ type: 'query', key: '3/shop.orders', input: EMPTY_INPUT }).promise).rejects.toMatchObject({ code: 'notFound' });
+  });
+
+  it('opens a directory-format dump and serves it like an archive', async () => {
+    const client = connect();
+    const gz = (b: Uint8Array) => gzipSync(b);
+    const dump = {
+      name: 'dump',
+      collections: [
+        { db: 'shop', collection: 'orders', bson: new File([gz(encodeBsonFile(docs))], 'orders.bson.gz'), metadata: new File([gz(encodeMetadataFile('orders'))], 'orders.metadata.json.gz') },
+        { db: 'admin', collection: 'system.version', bson: new File([encodeBsonFile([{ _id: 'featureCompatibilityVersion', version: '8.0' }]) as BlobPart], 'system.version.bson'), metadata: null },
+      ],
+    };
+    const progress: number[] = [];
+    const { archive } = await client.call({ type: 'openDump', archiveId: 11, dump }, { onProgress: (d) => progress.push(d) }).promise;
+    expect(progress.length).toBeGreaterThan(0);
+    expect(archive).toMatchObject({ archiveId: 11, fileName: 'dump', db: null, serverVersion: null, error: null });
+    expect(archive.collections.map((c) => [c.key, c.db, c.name, c.count, c.complete, c.indexes.map((i) => i.name)])).toEqual([
+      ['11/admin.system.version', 'admin', 'system.version', 1, true, []],
+      ['11/shop.orders', 'shop', 'orders', 30000, true, ['_id_']],
+    ]);
+
+    const input = { ...EMPTY_INPUT, filter: `{city: 'Haifa', price: {$lt: 100}}`, sort: '{i: -1}' };
+    expect(await client.call({ type: 'query', key: '11/shop.orders', input }).promise).toMatchObject({ matched: 50, returned: 50 });
+    const page = await client.call({ type: 'page', key: '11/shop.orders', input, offset: 0, size: 2 }).promise;
+    expect(page.docs.map((d) => d.i)).toEqual([99, 97]);
+    const chunks: string[] = [];
+    await client.call({ type: 'export', key: '11/admin.system.version', input: EMPTY_INPUT, format: 'jsonl', target: null }, { onChunk: (t) => chunks.push(t) }).promise;
+    expect(chunks.join('').trim()).toBe('{"_id":"featureCompatibilityVersion","version":"8.0"}');
+    expect((await client.call({ type: 'fields', key: '11/shop.orders' }).promise).paths.map((p) => p.path)).toEqual(['_id', 'city', 'i', 'price']);
+
+    await client.call({ type: 'close', archiveId: 11 }).promise;
+    await expect(client.call({ type: 'query', key: '11/shop.orders', input: EMPTY_INPUT }).promise).rejects.toMatchObject({ code: 'notFound' });
   });
 });

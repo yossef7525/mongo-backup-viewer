@@ -25,10 +25,17 @@ export interface ArchiveSummary {
   error: SummaryError | null;
 }
 
+/** A mongodump --out folder, grouped on the main thread (see groupInputs). */
+export interface DumpRequest {
+  name: string;
+  collections: { db: string; collection: string; bson: File; metadata: File | null }[];
+}
+
 type Req<T extends string, B = object> = { type: T; jobId: number } & B;
 
 export type Request =
   | Req<'open', { archiveId: number; file: File }>
+  | Req<'openDump', { archiveId: number; dump: DumpRequest }>
   | Req<'close', { archiveId: number }>
   | Req<'query', { key: string; input: QueryInput }>
   | Req<'page', { key: string; input: QueryInput; offset: number; size: number }>
@@ -52,6 +59,7 @@ export type Response =
 
 export interface ReplyMap {
   open: Extract<Reply, { type: 'opened' }>;
+  openDump: Extract<Reply, { type: 'opened' }>;
   close: Extract<Reply, { type: 'closed' }>;
   query: Extract<Reply, { type: 'queried' }>;
   page: Extract<Reply, { type: 'page' }>;

@@ -1,5 +1,6 @@
 import { EJSON } from 'bson';
 import { openArchive, type OpenedArchive, type OpenedCollection } from '../archive/open';
+import { openDirDump } from '../archive/openDump';
 import { createWriter } from '../export/writers';
 import { executeQuery, materialize, type QueryResult } from '../query/engine';
 import { parseQuerySpec, type QueryInput, type QuerySpec } from '../query/spec';
@@ -98,6 +99,15 @@ export function createBackend(post: (msg: Response) => void) {
         });
         archives.set(req.archiveId, opened);
         post({ type: 'opened', jobId, archive: summarize(req.archiveId, req.file.name, opened) });
+        return;
+      }
+      case 'openDump': {
+        const opened = await openDirDump(req.dump, {
+          signal,
+          onProgress: (done, total) => post({ type: 'progress', jobId, done, total }),
+        });
+        archives.set(req.archiveId, opened);
+        post({ type: 'opened', jobId, archive: summarize(req.archiveId, req.dump.name, opened) });
         return;
       }
       case 'close': {
